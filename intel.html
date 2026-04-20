@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f4d2b">
+<title>Round Analysis</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:Arial,Helvetica,sans-serif;background:#1f4d2b;margin:0;padding:0;color:#fff;display:flex;flex-direction:column;min-height:100vh;}
+.topnav{display:flex;align-items:center;background:#1c4729;padding:10px 16px;gap:12px;flex-shrink:0;border-bottom:2px solid #ffd447;box-shadow:0 2px 12px rgba(0,0,0,0.5);}
+.back-btn{background:none;border:none;color:#ffd447;font-size:15px;font-weight:bold;cursor:pointer;padding:4px 8px 4px 0;white-space:nowrap;display:flex;align-items:center;gap:6px;width:auto;text-decoration:none;}
+.back-btn:hover{color:#ffcc2a;}
+.topnav-title{font-size:15px;font-weight:bold;color:#ffd447;flex:1;text-align:center;letter-spacing:.5px;}
+.topnav-spacer{width:70px;}
+.tab-bar{display:flex;background:#1c4729;border-bottom:1px solid rgba(255,212,71,0.2);flex-shrink:0;}
+.tab{flex:1;padding:11px 8px;text-align:center;font-size:13px;font-weight:bold;cursor:pointer;color:rgba(255,255,255,0.5);border-bottom:3px solid transparent;transition:color .15s,border-color .15s;-webkit-user-select:none;}
+.tab.active{color:#ffd447;border-bottom-color:#ffd447;}
+.scroll-area{flex:1;overflow-y:auto;padding:16px 14px 80px;display:block;}
+.analysis-filters{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.analysis-filters select{width:100%;padding:10px;border-radius:4px;border:1px solid rgba(255,212,71,0.2);background:#1c4729;color:#fff;font-size:14px;color-scheme:dark;}
+.analysis-par-row{display:flex;gap:6px;}
+.analysis-par-row button{flex:1;padding:7px 4px;background:#1c4729;color:rgba(255,255,255,0.45);border:1px solid rgba(255,212,71,0.2);border-radius:20px;font-size:12px;cursor:pointer;letter-spacing:.5px;width:auto;margin-bottom:0;box-shadow:none;text-transform:none;font-weight:normal;letter-spacing:.5px;}
+.analysis-par-row button.active{background:rgba(255,212,71,0.15);color:#ffd447;border-color:rgba(255,212,71,0.5);font-weight:bold;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.stat-tile{background:#1c4729;border:1px solid rgba(184,150,46,0.15);border-top:2px solid rgba(255,212,71,0.35);border-radius:4px;padding:14px 10px;text-align:center;}
+.stat-tile .sv{font-size:24px;font-weight:bold;margin-bottom:4px;font-family:'Courier New',monospace;}
+.stat-tile .sl{font-size:9px;color:rgba(255,212,71,0.45);letter-spacing:1.5px;text-transform:uppercase;}
+.sv.good{color:#2ecc71;}
+.sv.bad{color:#ff4d4d;}
+.sv.neutral{color:#ffd447;}
+.analysis-section{margin-bottom:20px;}
+.analysis-section h4{color:rgba(255,212,71,0.7);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;border-bottom:1px solid rgba(255,212,71,0.15);padding-bottom:6px;}
+.field-insights-box{margin:14px 0 6px;background:#1c4729;border:1px solid rgba(255,212,71,0.18);border-left:3px solid rgba(255,212,71,0.5);border-radius:4px;padding:12px 14px;font-size:13px;line-height:1.8;}
+.field-insights-box b{color:#ffd447;}
+.field-table-wrap{overflow-x:auto;}
+.analysis-empty{text-align:center;color:rgba(255,255,255,0.2);font-size:12px;padding:40px 20px;line-height:2;letter-spacing:.5px;}
+.tag-good{color:#2ecc71;font-weight:bold;}
+.tag-bad{color:#ff4d4d;font-weight:bold;}
+.tag-neutral{color:#ffd447;}
+.rounds-empty{text-align:center;color:rgba(255,255,255,0.2);font-size:12px;padding:40px 20px;line-height:2;letter-spacing:.5px;}
+.round-entry{background:rgba(255,255,255,0.03);border:1px solid rgba(255,212,71,0.12);border-radius:8px;margin-bottom:10px;overflow:hidden;}
+.round-entry-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;}
+.round-entry-header:active{background:rgba(255,255,255,0.04);}
+.round-entry-left{display:flex;flex-direction:column;gap:3px;}
+.round-entry-name{font-size:13px;font-weight:bold;color:#fff;letter-spacing:.3px;}
+.round-entry-meta{font-size:11px;color:rgba(255,212,71,0.55);letter-spacing:.3px;}
+.round-entry-right{display:flex;align-items:center;gap:10px;}
+.round-entry-stp{font-size:15px;font-weight:bold;}
+.round-entry-chevron{color:rgba(255,212,71,0.4);font-size:12px;transition:transform .25s;}
+.round-entry.expanded .round-entry-chevron{transform:rotate(180deg);}
+.round-entry-detail{display:none;border-top:1px solid rgba(255,212,71,0.1);padding:10px 14px 14px;}
+.round-entry.expanded .round-entry-detail{display:block;}
+.round-sc-table{width:100%;border-collapse:collapse;font-size:11px;}
+.round-sc-table th{background:#1c4729;color:#ffd447;border:1px solid rgba(255,212,71,0.12);padding:4px 3px;text-align:center;font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.round-sc-table td{border:1px solid rgba(255,212,71,0.08);padding:4px 3px;text-align:center;color:rgba(255,255,255,0.75);}
+.sc-eagle{color:#f1c40f;font-weight:bold;}
+.sc-birdie{color:#2ecc71;font-weight:bold;}
+.sc-bogey{color:#ff8c42;}
+.sc-double{color:#ff4d4d;font-weight:bold;}
+.round-sc-stats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.round-sc-stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,212,71,0.1);border-radius:4px;padding:4px 8px;font-size:10px;color:rgba(255,212,71,0.7);}
+.bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#1c4729;border-top:1px solid rgba(255,212,71,0.25);z-index:200;}
+.bn-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 12px;gap:3px;cursor:pointer;text-decoration:none;color:rgba(255,212,71,0.4);font-size:10px;font-weight:bold;letter-spacing:.5px;text-transform:uppercase;-webkit-user-select:none;}
+.bn-tab.active{color:#ffd447;}
+.bn-tab-icon{font-size:18px;line-height:1;}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a class="back-btn" href="index.html">‹ Menu</a>
+  <div class="topnav-title">Round Analysis</div>
+  <div class="topnav-spacer"></div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" id="tabIntel" onclick="switchTab('intel')">📊 Statistics</div>
+  <div class="tab" id="tabRounds" onclick="switchTab('rounds')">📋 Scorecards</div>
+</div>
+
+<div class="scroll-area" id="scrollArea"></div>
+
+<nav class="bottom-nav">
+  <a class="bn-tab" href="history.html">
+    <span class="bn-tab-icon">🏆</span>Trophy Room
+  </a>
+  <a class="bn-tab" href="insights.html">
+    <span class="bn-tab-icon">📈</span>Insights
+  </a>
+  <a class="bn-tab active" href="intel.html">
+    <span class="bn-tab-icon">🔬</span>Rounds
+  </a>
+</nav>
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+let activeTab = 'intel';
+let analysisParSel = 'all';
+
+/* ── Shared ── */
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function switchTab(tab){
+  activeTab = tab;
+  document.getElementById('tabIntel').classList.toggle('active', tab==='intel');
+  document.getElementById('tabRounds').classList.toggle('active', tab==='rounds');
+  render();
+}
+
+function render(){
+  const area = document.getElementById('scrollArea');
+  if(activeTab === 'intel'){
+    area.innerHTML = renderIntelHTML();
+    setTimeout(renderAnalysis, 0);
+  } else {
+    area.innerHTML = renderRoundsHTML();
+  }
+}
+
+/* ══════════════════════════════════
+   INTEL MODE — Analysis
+   ══════════════════════════════════ */
+function loadRounds(){
+  try{ return JSON.parse(localStorage.getItem('fieldRounds')||'[]'); }catch(e){ return []; }
+}
+
+function renderIntelHTML(){
+  const rounds = loadRounds();
+  const players = [...new Set(rounds.map(r=>r.player))].sort();
+  const courses = [...new Set(rounds.map(r=>r.course))].sort();
+  const dates = [...new Set(rounds.map(r=>r.date?.slice(0,10)))].filter(Boolean).sort((a,b)=>b.localeCompare(a));
+
+  const pOptions = ['<option value="all">Select a player</option>', ...players.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`)].join('');
+  const cOptions = ['<option value="all">All Courses</option>', ...courses.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`)].join('');
+  const dOptions = ['<option value="all">All Dates</option>', ...dates.map(d=>{
+    const label = new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+    return `<option value="${d}">${label}</option>`;
+  })].join('');
+
+  return `
+    <div class="analysis-filters">
+      <select id="analysisPlayerSelect" onchange="renderAnalysis()">${pOptions}</select>
+      <select id="analysisCourseSelect" onchange="renderAnalysis()">${cOptions}</select>
+      <select id="analysisDateSelect" onchange="renderAnalysis()">${dOptions}</select>
+      <div class="analysis-par-row" id="analysisParBtns">
+        <button class="${analysisParSel==='all'?'active':''}" onclick="analysisParFilter('all',this)">All</button>
+        <button class="${analysisParSel===3?'active':''}" onclick="analysisParFilter(3,this)">Par 3</button>
+        <button class="${analysisParSel===4?'active':''}" onclick="analysisParFilter(4,this)">Par 4</button>
+        <button class="${analysisParSel===5?'active':''}" onclick="analysisParFilter(5,this)">Par 5</button>
+      </div>
+    </div>
+    <div id="analysisBody"></div>
+  `;
+}
+
+function analysisParFilter(p, btn){
+  analysisParSel = p;
+  document.querySelectorAll('#analysisParBtns button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderAnalysis();
+}
+
+function renderAnalysis(){
+  let rounds = loadRounds();
+  const playerFilter = document.getElementById('analysisPlayerSelect').value;
+  const courseFilter = document.getElementById('analysisCourseSelect').value;
+  const dateFilter = document.getElementById('analysisDateSelect')?.value ?? 'all';
+
+  if(playerFilter === 'all'){
+    document.getElementById('analysisBody').innerHTML = '<div class="analysis-empty" style="text-align:center;color:rgba(255,255,255,0.3);font-size:13px;padding:60px 20px;line-height:2;">Select a player to view their analysis.</div>';
+    return;
+  }
+
+  if(playerFilter !== 'all') rounds = rounds.filter(r=>r.player===playerFilter);
+  if(courseFilter !== 'all') rounds = rounds.filter(r=>r.course===courseFilter);
+  if(dateFilter !== 'all') rounds = rounds.filter(r=>r.date?.slice(0,10)===dateFilter);
+
+  const body = document.getElementById('analysisBody');
+  if(!body) return;
+
+  if(!rounds.length){
+    body.innerHTML = '<div class="analysis-empty">No rounds match the selected filters.<br>Record a Regular Round to start tracking.</div>';
+    return;
+  }
+
+  let allHoles = [];
+  rounds.forEach(r=>{
+    r.holes.forEach(h=>{
+      if(h.score===null) return;
+      if(analysisParSel!=='all' && h.par!=analysisParSel) return;
+      allHoles.push({...h, player:r.player, course:r.course, roundId:r.id});
+    });
+  });
+
+  if(!allHoles.length){
+    body.innerHTML = '<div class="analysis-empty">No scored holes match these filters.</div>';
+    return;
+  }
+
+  const stats = calcStats(allHoles, 'all');
+  const totalRounds = rounds.length;
+  const avgScore = allHoles.reduce((s,h)=>s+h.score,0) / allHoles.length;
+  const parAvg = allHoles.reduce((s,h)=>s+h.par,0) / allHoles.length;
+  const scoreToPar = avgScore - parAvg;
+
+  let html = `<div class="analysis-section">
+    <h4>Overview — ${totalRounds} round${totalRounds!==1?'s':''}, ${allHoles.length} holes</h4>
+    <div class="stat-grid">
+      <div class="stat-tile"><div class="sv ${scoreToPar<=0?'good':'bad'}">${scoreToPar>0?'+':''}${scoreToPar.toFixed(2)}</div><div class="sl">Avg Score to Par</div></div>
+      ${(()=>{ const doubles=allHoles.filter(h=>h.score-h.par>=2).length; const pct=allHoles.length>0?Math.round(doubles/allHoles.length*100):0; return `<div class="stat-tile"><div class="sv ${pct<=10?'neutral':'bad'}">${doubles} <span style="font-size:12px;opacity:0.7">(${pct}%)</span></div><div class="sl">Double Bogey+</div></div>`; })()}
+      <div class="stat-tile"><div class="sv ${stats.firPct>0.6?'good':'bad'}">${Math.round(stats.firPct*100)}%</div><div class="sl">Playable Tee Shot%</div></div>
+      ${(()=>{
+        const td = stats.teeDir; const tTotal = td.L+td.R;
+        if(tTotal===0) return `<div class="stat-tile"><div class="sv neutral">–</div><div class="sl">Tee Miss Tendency</div></div>`;
+        const dom = td.L>=td.R ? ['L',td.L] : ['R',td.R];
+        const pct = Math.round(dom[1]/tTotal*100);
+        return `<div class="stat-tile"><div class="sv neutral">${dom[0]} <span style="font-size:14px;opacity:0.7">(${pct}%)</span></div><div class="sl">Tee Miss (${tTotal} misses)</div></div>`;
+      })()}
+      <div class="stat-tile"><div class="sv ${stats.girPct>0.6?'good':'bad'}">${Math.round(stats.girPct*100)}%</div><div class="sl">Approach in Reg%</div></div>
+      ${(()=>{
+        const ad = stats.appDir; const aTotal = ad.L+ad.R+ad.S+ad.Lo;
+        if(aTotal===0) return `<div class="stat-tile"><div class="sv neutral">–</div><div class="sl">App Miss Tendency</div></div>`;
+        const entries = [['L',ad.L],['R',ad.R],['S',ad.S],['Lo',ad.Lo]];
+        const dom = entries.reduce((a,b)=>b[1]>a[1]?b:a);
+        const pct = Math.round(dom[1]/aTotal*100);
+        return `<div class="stat-tile"><div class="sv neutral">${dom[0]} <span style="font-size:14px;opacity:0.7">(${pct}%)</span></div><div class="sl">App Miss (${aTotal} misses)</div></div>`;
+      })()}
+      <div class="stat-tile"><div class="sv ${stats.udPct===null?'neutral':stats.udPct>=0.5?'good':'bad'}">${stats.udPct===null?'–':Math.round(stats.udPct*100)+'%'}</div><div class="sl">Up &amp; Down%</div></div>
+      <div class="stat-tile"><div class="sv ${stats.puttsPerGir===null||stats.puttsPerGir<=1.8?'good':'bad'}">${stats.puttsPerGir===null?'–':stats.puttsPerGir.toFixed(2)}</div><div class="sl">Putts per GIR</div></div>
+      <div class="stat-tile"><div class="sv ${stats.threePutts===0?'good':'bad'}">${stats.threePutts}</div><div class="sl">3-Putts</div></div>
+      <div class="stat-tile"><div class="sv ${stats.totalPen<=3?'neutral':'bad'}">${stats.totalPen}</div><div class="sl">Total Penalties</div></div>
+    </div>
+  </div>`;
+
+  const {insights, strategy} = buildInsights(stats, playerFilter==='all'?'This player':playerFilter);
+  html += `<div class="analysis-section">
+    <h4>Scouting Report</h4>
+    <div class="field-insights-box">
+      <b>${esc(playerFilter==='all'?'All Players':playerFilter)}</b><br>
+      ${insights.join(' &nbsp;·&nbsp; ')}<br><br>
+      <b>Beat Them:</b><br>${strategy.join('<br>')}
+    </div>
+  </div>`;
+
+  body.innerHTML = html;
+}
+
+function toggleRound(id){
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('expanded');
+}
+
+function renderRoundsHTML(){
+  const rounds = loadRounds();
+  if(!rounds.length) return `<div class="rounds-empty">No rounds recorded yet.<br>Play a Regular Round to see your history here.</div>`;
+
+  const sorted = [...rounds].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const SCORE_CLASS = stp => stp<=-2?'sc-eagle':stp===-1?'sc-birdie':stp===0?'':stp===1?'sc-bogey':'sc-double';
+  const SCORE_LABEL = stp => stp<=-2?'Eagle':stp===-1?'Birdie':stp===0?'Par':stp===1?'Bogey':'Double+';
+  const DIR_LABEL = {L:'Left',R:'Right',S:'Short',Lo:'Long'};
+
+  let html = '';
+  sorted.forEach((r,idx)=>{
+    const id = 'round_'+idx;
+    const holes = r.holes.filter(h=>h.score!==null);
+    if(!holes.length) return;
+    const stp = holes.reduce((s,h)=>s+(h.score-h.par),0);
+    const stpStr = stp===0?'E':(stp>0?'+'+stp:stp);
+    const stpClass = stp<0?'tag-good':stp>0?'tag-bad':'tag-neutral';
+    const date = new Date(r.date).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+    const stats = calcStats(holes,'all');
+
+    html += `<div class="round-entry" id="${id}">
+      <div class="round-entry-header" onclick="toggleRound('${id}')">
+        <div class="round-entry-left">
+          <div class="round-entry-name">${esc(r.player||'Player')}</div>
+          <div class="round-entry-meta">${date} &nbsp;·&nbsp; ${esc(r.course||'Unknown Course')} &nbsp;·&nbsp; ${holes.length} holes</div>
+        </div>
+        <div class="round-entry-right">
+          <span class="round-entry-stp ${stpClass}">${stpStr}</span>
+          <span class="round-entry-chevron">▼</span>
+        </div>
+      </div>
+      <div class="round-entry-detail">
+        <div class="round-sc-stats">
+          <span class="round-sc-stat">Tee ${Math.round(stats.firPct*100)}%</span>
+          <span class="round-sc-stat">App ${Math.round(stats.girPct*100)}%</span>
+          ${stats.udPct!==null?`<span class="round-sc-stat">U&amp;D ${Math.round(stats.udPct*100)}%</span>`:''}
+          ${stats.puttsPerGir!==null?`<span class="round-sc-stat">P/GIR ${stats.puttsPerGir.toFixed(1)}</span>`:''}
+          ${stats.threePutts>0?`<span class="round-sc-stat">3-Putts ${stats.threePutts}</span>`:''}
+          ${stats.totalPen>0?`<span class="round-sc-stat">Pen ${stats.totalPen}</span>`:''}
+        </div>
+        <div class="field-table-wrap"><table class="round-sc-table">
+          <thead><tr><th>#</th><th>Par</th><th>Score</th><th>+/-</th><th>Tee</th><th>App</th><th>Putts</th><th>Pen</th></tr></thead>
+          <tbody>`;
+
+    r.holes.forEach((h,i)=>{
+      if(h.score===null){ html+=`<tr><td>${i+1}</td><td>${h.par}</td><td colspan="6" style="color:rgba(255,255,255,0.2)">–</td></tr>`; return; }
+      const diff = h.score-h.par;
+      const hitTee = h.pts!==undefined ? h.pts : h.fir;
+      const hitApp = h.air!==undefined ? h.air : h.gir;
+      const teeCell = h.par===3 ? '<td style="color:rgba(255,255,255,0.3)">–</td>' :
+        hitTee ? '<td style="color:#2ecc71">✓</td>' :
+        `<td style="color:#ff4d4d">✗${h.teeDir?' '+h.teeDir:''}</td>`;
+      const appCell = hitApp ? '<td style="color:#2ecc71">✓</td>' :
+        `<td style="color:#ff4d4d">✗${h.airDir?' '+h.airDir:(h.appDir?' '+h.appDir:'')}</td>`;
+      html += `<tr>
+        <td>${i+1}</td>
+        <td>${h.par}</td>
+        <td class="${SCORE_CLASS(diff)}">${h.score}</td>
+        <td class="${diff<=0?'tag-good':diff===1?'sc-bogey':'sc-double'}">${diff===0?'E':diff>0?'+'+diff:diff}</td>
+        ${teeCell}
+        ${appCell}
+        <td>${h.putts}</td>
+        <td>${h.pen>0?h.pen:''}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+function calcStats(holes, parFilter){
+  let filtered = holes.filter(h=>{
+    if(h.score===null) return false;
+    if(parFilter!=='all' && h.par!=parFilter) return false;
+    return true;
+  });
+  let n=filtered.length||1;
+  let firOpp=0,firHit=0,gir=0,girPutts=0,putts=0,pen=0,udOpp=0,udHit=0,threePutts=0;
+  let teeDir={L:0,R:0}, appDir={L:0,R:0,S:0,Lo:0};
+  filtered.forEach(h=>{
+    const hitTee = h.pts!==undefined ? h.pts : h.fir;
+    const hitApp = h.air!==undefined ? h.air : h.gir;
+    if(h.par!==3){
+      firOpp++;
+      if(hitTee) firHit++;
+      else if(h.teeDir && teeDir[h.teeDir]!==undefined) teeDir[h.teeDir]++;
+    }
+    if(hitApp){ gir++; girPutts+=h.putts; }
+    else if(h.airDir && appDir[h.airDir]!==undefined) appDir[h.airDir]++;
+    putts+=h.putts;
+    if(h.putts>=3) threePutts++;
+    pen+=h.pen;
+    if(!hitApp && h.score!==null){ udOpp++; if(h.score<=h.par) udHit++; }
+  });
+  function dominantDir(d){
+    const t=Object.values(d).reduce((s,v)=>s+v,0);
+    if(t<3) return null;
+    for(const k of Object.keys(d)){ if(d[k]/t>=0.6) return k; }
+    return null;
+  }
+  return {
+    n, firPct:firHit/(firOpp||1), firOpp, girPct:gir/n,
+    puttsPerGir:gir>0?girPutts/gir:null, threePutts,
+    totalPen:pen, udPct:udOpp>0?udHit/udOpp:null, udOpp,
+    holesPlayed:filtered.length,
+    teeDirDominant:dominantDir(teeDir), appDirDominant:dominantDir(appDir),
+    teeDir, appDir
+  };
+}
+
+function buildInsights(stats, name){
+  const insights=[], strategy=[];
+  const dirLabel={L:'left',R:'right',S:'short',Lo:'long'};
+
+  if(stats.firOpp>=3){
+    if(stats.firPct>=0.65) insights.push("<span class='tag-good'>Consistent off the tee</span>");
+    else if(stats.firPct>=0.45) insights.push("<span class='tag-neutral'>Mixed tee shots</span>");
+    else{ insights.push("<span class='tag-bad'>Erratic driver</span>"); strategy.push("Tee it up on the trouble side — they're regularly missing fairways"); }
+    if(stats.teeDirDominant){
+      const d=stats.teeDirDominant;
+      insights.push(`<span class='tag-bad'>Misses tee shots ${dirLabel[d]}</span>`);
+      strategy.push(`Hug the ${dirLabel[d]} side off the tee — forces them to carry their miss over trouble`);
+    }
+  }
+  if(stats.girPct>=0.6) insights.push("<span class='tag-good'>Regularly finding greens</span>");
+  else if(stats.girPct>=0.4){ insights.push("<span class='tag-neutral'>Inconsistent approach play</span>"); strategy.push("Pick difficult pins — they'll miss enough greens to feel the pressure"); }
+  else{ insights.push("<span class='tag-bad'>Struggling to hit greens</span>"); strategy.push("Attack — their short game is under pressure every hole"); }
+  if(stats.appDirDominant){
+    const d=stats.appDirDominant;
+    insights.push(`<span class='tag-bad'>Misses approaches ${dirLabel[d]}</span>`);
+    if(d==='L'||d==='R') strategy.push(`Play to pins on the ${dirLabel[d]} half of the green — they chip from that side constantly`);
+    else if(d==='S') strategy.push("They consistently come up short — back pin positions and firm conditions hurt them");
+    else if(d==='Lo') strategy.push("They consistently fly the green — front pins and firm greens are dangerous for them");
+  }
+  if(stats.puttsPerGir!==null){
+    if(stats.puttsPerGir<=1.7) insights.push("<span class='tag-good'>Strong putter on the green</span>");
+    else if(stats.puttsPerGir<=1.9) insights.push("<span class='tag-neutral'>Average putting</span>");
+    else{ insights.push("<span class='tag-bad'>Leaking shots on the greens</span>"); strategy.push("Lag them away from the hole — 3-putts are likely from distance"); }
+  }
+  if(stats.threePutts>=3){ insights.push(`<span class='tag-bad'>${stats.threePutts} three-putts</span>`); strategy.push("Keep them on the far side of the hole — distance kills their putting"); }
+  else if(stats.threePutts>=1 && stats.puttsPerGir!==null && stats.puttsPerGir>1.8){
+    strategy.push(`${stats.threePutts} three-putt${stats.threePutts>1?'s':''} — distance management on approach is key`);
+  }
+  if(stats.udPct!==null && stats.udOpp>=3){
+    if(stats.udPct>=0.55) insights.push("<span class='tag-good'>Reliable scrambler</span>");
+    else if(stats.udPct>=0.35) insights.push("<span class='tag-neutral'>Average short game</span>");
+    else{ insights.push("<span class='tag-bad'>Weak short game — rarely saves par</span>"); strategy.push(`Miss to the difficult side of greens — their up & down rate is ${Math.round(stats.udPct*100)}%`); }
+  }
+  if(stats.totalPen>=5){ insights.push("<span class='tag-bad'>Penalty prone — finds trouble often</span>"); strategy.push("Play conservatively — let them rack up penalty strokes"); }
+  else if(stats.totalPen>=3){ insights.push("<span class='tag-bad'>Takes penalties</span>"); strategy.push("Stay patient — they'll give strokes away"); }
+
+  if(!strategy.length) strategy.push("Balanced player — no obvious weakness to exploit");
+  return {insights, strategy};
+}
+
+// Bootstrap
+switchTab(activeTab);
+</script>
+</body>
+</html>

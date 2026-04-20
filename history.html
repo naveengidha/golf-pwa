@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f4d2b">
+<title>Trophy Room</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg-page:#1f4d2b;
+  --bg-nav:#1c4729;
+  --bg-card:#2e6b3f;
+  --bg-cell:#1c4729;
+  --text-primary:#fff;
+  --text-muted:rgba(255,255,255,0.45);
+  --text-heading:#ffd447;
+  --accent:#ffd447;
+  --accent-dim:rgba(255,215,0,0.35);
+  --border-card:transparent;
+  --border-divider:rgba(255,255,255,0.1);
+  --tab-active-color:#ffd447;
+  --tab-active-border:#ffd447;
+  --font-ui:Arial,Helvetica,sans-serif;
+  --ls-heading:1px;
+  --tt-heading:uppercase;
+}
+body{font-family:var(--font-ui);background:var(--bg-page);margin:0;padding:0;color:var(--text-primary);display:flex;flex-direction:column;min-height:100vh;}
+.topnav{display:flex;align-items:center;background:var(--bg-nav);padding:10px 16px;gap:12px;flex-shrink:0;border-bottom:2px solid var(--accent);box-shadow:0 2px 12px rgba(0,0,0,0.5);}
+.back-btn{background:none;border:none;color:var(--accent);font-size:15px;font-weight:bold;cursor:pointer;padding:4px 8px 4px 0;white-space:nowrap;text-decoration:none;}
+.back-btn:hover{color:#ffcc2a;}
+.topnav-title{font-size:15px;font-weight:bold;color:var(--accent);flex:1;text-align:center;letter-spacing:.5px;}
+.tab-bar{display:flex;background:var(--bg-nav);border-bottom:1px solid rgba(255,212,71,0.2);flex-shrink:0;}
+.tab{flex:1;padding:11px 8px;text-align:center;font-size:13px;font-weight:bold;cursor:pointer;color:rgba(255,255,255,0.5);border-bottom:3px solid transparent;transition:color .15s,border-color .15s;-webkit-user-select:none;}
+.tab.active{color:#ffd447;border-bottom-color:#ffd447;}
+.scroll-area{flex:1;overflow-y:auto;padding:16px 14px 80px;}
+.round-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:10px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.round-card-header{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 14px 12px;cursor:pointer;gap:10px;}
+.round-card-header:active{background:rgba(255,255,255,0.04);}
+.rch-left{flex:1;}
+.rch-date{font-size:11px;color:var(--text-muted);margin-bottom:4px;letter-spacing:.3px;}
+.rch-course{font-size:15px;font-weight:bold;margin-bottom:6px;}
+.rch-summary{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5;}
+.rch-result{font-size:13px;font-weight:bold;background:var(--bg-cell);border-radius:6px;padding:6px 10px;white-space:nowrap;text-align:center;flex-shrink:0;}
+.rch-result.black-win{border-left:3px solid #fff;}
+.rch-result.red-win{border-left:3px solid #800000;}
+.rch-result.tie{border-left:3px solid #888;}
+.rch-chevron{font-size:18px;color:rgba(255,255,255,0.3);align-self:center;flex-shrink:0;transition:transform .2s;}
+.round-card.expanded .rch-chevron{transform:rotate(90deg);}
+.rch-del{background:none;border:none;color:rgba(255,77,77,0.5);font-size:16px;cursor:pointer;padding:0 2px;align-self:flex-start;flex-shrink:0;}
+.rch-del:hover{color:#ff4d4d;}
+.round-detail{display:none;padding:0 14px 14px;}
+.round-card.expanded .round-detail{display:block;}
+.detail-section{margin-bottom:14px;}
+.detail-section h5{color:var(--text-heading);font-size:11px;letter-spacing:var(--ls-heading);text-transform:var(--tt-heading);margin:0 0 6px;border-bottom:1px solid var(--border-divider);padding-bottom:5px;}
+.leaderboard{display:flex;flex-direction:column;gap:4px;}
+.lb-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg-cell);border-radius:6px;padding:7px 10px;font-size:14px;}
+.lb-row.lb-winner{background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);font-weight:bold;}
+.lb-row .lb-name{flex:1;}
+.lb-row .lb-score{font-weight:bold;}
+.team-block{display:flex;gap:8px;margin-bottom:8px;}
+.team-tile{flex:1;border-radius:8px;padding:10px;text-align:center;}
+.team-tile.black{background:#111;}
+.team-tile.red{background:#5a0000;}
+.team-tile .tt-label{font-size:10px;opacity:.6;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+.team-tile .tt-score{font-size:22px;font-weight:bold;color:var(--accent);}
+.team-tile .tt-names{font-size:11px;opacity:.6;margin-top:4px;}
+.team-tile.winner{box-shadow:0 0 0 2px var(--accent);}
+.sc-wrap{overflow-x:auto;margin-top:6px;}
+table.sc-table{width:100%;border-collapse:collapse;font-size:12px;}
+table.sc-table th{background:var(--bg-cell);color:var(--text-heading);border:1px solid var(--border-divider);padding:5px 4px;text-align:center;white-space:nowrap;}
+table.sc-table td{border:1px solid var(--border-divider);padding:4px 3px;text-align:center;}
+table.sc-table tr.sc-winner-row td{background:rgba(255,215,0,0.1);}
+.empty-state{text-align:center;color:var(--text-muted);font-size:14px;padding:50px 20px;line-height:2;}
+.settle-row{display:flex;align-items:center;gap:8px;background:var(--bg-cell);border-radius:6px;padding:7px 10px;margin-bottom:5px;font-size:13px;}
+.settle-row:last-child{margin-bottom:0;}
+.settle-from{color:#ff7b7b;font-weight:bold;}
+.settle-arrow{color:rgba(255,255,255,0.35);}
+.settle-to{color:#5ee87b;font-weight:bold;}
+.settle-amount{margin-left:auto;font-weight:bold;color:var(--accent);}
+.settle-all-square{font-size:13px;color:var(--text-muted);text-align:center;padding:4px 0;}
+.tag-good{color:#2ecc71;font-weight:bold;}
+.tag-bad{color:#ff4d4d;font-weight:bold;}
+.stn-panel{background:var(--bg-card);border:1px solid var(--border-card);border-radius:10px;margin-bottom:16px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.stn-panel-title{color:var(--text-heading);font-size:11px;letter-spacing:var(--ls-heading);text-transform:var(--tt-heading);margin:0 0 10px;border-bottom:1px solid var(--border-divider);padding-bottom:5px;}
+.stn-meta{font-size:11px;color:var(--text-muted);margin-bottom:10px;text-align:right;}
+.stn-table{width:100%;border-collapse:collapse;}
+.stn-table th{font-size:11px;color:var(--text-muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--border-divider);white-space:nowrap;}
+.stn-table th.num{text-align:right;}
+.stn-table td{padding:8px 6px;font-size:13px;border-bottom:1px solid var(--border-divider);vertical-align:middle;}
+.stn-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.stn-table tr:last-child td{border-bottom:none;}
+.stn-rank{width:24px;font-size:11px;font-weight:bold;color:var(--text-muted);text-align:center;padding-right:2px;}
+.stn-rank.r1{color:#ffd447;}
+.stn-rank.r2{color:#c0c0c0;}
+.stn-rank.r3{color:#cd7f32;}
+.stn-name{font-weight:bold;}
+.stn-name.leader{color:var(--accent);}
+.stn-pos{color:#4caf50;}
+.stn-neg{color:#f44336;}
+.stn-zero{color:var(--text-muted);}
+.stn-pct{font-size:11px;color:var(--text-muted);}
+.rounds-label{font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:rgba(255,212,71,0.6);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,212,71,0.15);}
+.bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#1c4729;border-top:1px solid rgba(255,212,71,0.25);z-index:200;}
+.bn-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 12px;gap:3px;cursor:pointer;text-decoration:none;color:rgba(255,212,71,0.4);font-size:10px;font-weight:bold;letter-spacing:.5px;text-transform:uppercase;-webkit-user-select:none;}
+.bn-tab.active{color:#ffd447;}
+.bn-tab-icon{font-size:18px;line-height:1;}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <button class="back-btn" onclick="window.location.href='index.html'">‹ Menu</button>
+  <div class="topnav-title">Trophy Room</div>
+  <div style="width:70px;"></div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" id="tabF1" onclick="switchTab('f1')">🏎️ Grand Prix</div>
+  <div class="tab" id="tabBanker" onclick="switchTab('banker')">🏦 The Banker</div>
+  <div class="tab" id="tabStableford" onclick="switchTab('stableford')">🎯 Stableford</div>
+  <div class="tab" id="tabMatchplay" onclick="switchTab('matchplay')">⚔️ Match Play</div>
+</div>
+
+<div class="scroll-area" id="scrollArea"></div>
+
+<nav class="bottom-nav">
+  <a class="bn-tab active" href="history.html">
+    <span class="bn-tab-icon">🏆</span>Trophy Room
+  </a>
+  <a class="bn-tab" href="insights.html">
+    <span class="bn-tab-icon">📈</span>Insights
+  </a>
+  <a class="bn-tab" href="intel.html">
+    <span class="bn-tab-icon">🔬</span>Rounds
+  </a>
+</nav>
+
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+let activeTab = 'f1';
+
+
+/* ── Data ── */
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem('gameHistory')||'[]'); }
+  catch(e){ return []; }
+}
+function saveHistory(arr){ localStorage.setItem('gameHistory', JSON.stringify(arr)); }
+
+function switchTab(game){
+  activeTab = game;
+  document.body.dataset.game = game;
+  document.getElementById('tabF1').classList.toggle('active', game==='f1');
+  document.getElementById('tabBanker').classList.toggle('active', game==='banker');
+  document.getElementById('tabStableford').classList.toggle('active', game==='stableford');
+  document.getElementById('tabMatchplay').classList.toggle('active', game==='matchplay');
+  render();
+}
+
+function render(){
+  const area = document.getElementById('scrollArea');
+  const all = loadHistory();
+  const rounds = all.filter(r=>r.game===activeTab).reverse();
+  const gameName = {f1:'Grand Prix', banker:'The Banker', stableford:'Stableford', matchplay:'Match Play'}[activeTab];
+
+  let standingsHtml = '';
+  if(activeTab === 'f1')         standingsHtml = renderStandingsPanelPoints(buildPointsStandings(all.filter(r=>r.game==='f1')), 'Grand Prix');
+  else if(activeTab === 'banker')     standingsHtml = renderStandingsPanelBanker(buildBankerStandings(all.filter(r=>r.game==='banker')));
+  else if(activeTab === 'stableford') standingsHtml = renderStandingsPanelPoints(buildPointsStandings(all.filter(r=>r.game==='stableford')), 'Stableford');
+  else if(activeTab === 'matchplay')  standingsHtml = renderStandingsPanelMatch(buildMatchPlayStandings(all.filter(r=>r.game==='matchplay')));
+
+  if(!rounds.length){
+    area.innerHTML = standingsHtml + `<div class="empty-state">No ${gameName} rounds saved yet.<br>Finish a round to see results here.</div>`;
+    return;
+  }
+
+  const roundsHtml = `<div class="rounds-label">Rounds</div>` + rounds.map(r =>
+    activeTab==='f1'         ? renderF1Card(r)        :
+    activeTab==='banker'     ? renderBankerCard(r)     :
+    activeTab==='stableford' ? renderStablefordCard(r) :
+    activeTab==='matchplay'  ? renderMatchPlayCard(r)  : ''
+  ).join('');
+
+  area.innerHTML = standingsHtml + roundsHtml;
+}
+
+/* ── F1 CARD ── */
+function renderF1Card(r){
+  let date = new Date(r.date).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  let bScore = r.teamTotals[0].toFixed(1);
+  let rScore = r.teamTotals[1].toFixed(1);
+  let bWin = r.teamTotals[0] > r.teamTotals[1];
+  let tie = r.teamTotals[0] === r.teamTotals[1];
+  let resultClass = tie ? 'tie' : bWin ? 'black-win' : 'red-win';
+  let resultText = tie ? 'Tie' : (bWin ? '⚫ Black Win' : '🔴 Red Win');
+
+  let sorted = r.players.map((name,i)=>({name, pts:r.playerTotals[i], team:i<2?'Black':'Red'}))
+    .sort((a,b)=>b.pts-a.pts);
+  let lbHtml = sorted.map((p,i)=>`
+    <div class="lb-row ${i===0?'lb-winner':''}">
+      <span class="lb-name">${esc(p.name)} <small style="opacity:.5">${p.team}</small></span>
+      <span class="lb-score">${p.pts.toFixed(1)}</span>
+    </div>`).join('');
+
+  let scRows = '';
+  for(let h=0; h<r.scoreHistory.length; h++){
+    let scores = r.scoreHistory[h];
+    let pts = r.pointHistory[h];
+    scRows += `<tr>
+      <td>${h+1}</td>
+      ${scores.map((s,i)=>`<td>${s}<br><small style="opacity:.5">(${pts[i].toFixed(1)})</small></td>`).join('')}
+    </tr>`;
+  }
+  scRows += `<tr style="font-weight:bold;background:var(--bg-cell)">
+    <td>Tot</td>
+    ${r.playerTotals.map(t=>`<td>${t.toFixed(1)}</td>`).join('')}
+  </tr>`;
+
+  let scHead = `<th>#</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
+
+  return `<div class="round-card" id="card-${r.id}">
+    <div class="round-card-header" onclick="toggleCard(${r.id})">
+      <div class="rch-left">
+        <div class="rch-date">${date}</div>
+        <div class="rch-course">${esc(r.course)}</div>
+        <div class="rch-summary">${esc(r.players.slice(0,2).join(' & '))} vs ${esc(r.players.slice(2,4).join(' & '))}</div>
+      </div>
+      <div class="rch-result ${resultClass}">${resultText}<br>${bScore} – ${rScore}</div>
+      <button class="rch-del" onclick="deleteRound(event,${r.id})" title="Delete">✕</button>
+      <div class="rch-chevron">›</div>
+    </div>
+    <div class="round-detail">
+      <div class="detail-section">
+        <h5>Teams</h5>
+        <div class="team-block">
+          <div class="team-tile black ${bWin?'winner':''}">
+            <div class="tt-label">Team Black</div>
+            <div class="tt-score">${bScore}</div>
+            <div class="tt-names">${esc(r.players[0])}<br>${esc(r.players[1])}</div>
+          </div>
+          <div class="team-tile red ${!bWin&&!tie?'winner':''}">
+            <div class="tt-label">Team Red</div>
+            <div class="tt-score">${rScore}</div>
+            <div class="tt-names">${esc(r.players[2])}<br>${esc(r.players[3])}</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h5>Individual Standings</h5>
+        <div class="leaderboard">${lbHtml}</div>
+      </div>
+      <div class="detail-section">
+        <h5>Scorecard</h5>
+        <div class="sc-wrap">
+          <table class="sc-table">
+            <thead><tr>${scHead}</tr></thead>
+            <tbody>${scRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── BANKER CARD ── */
+function renderBankerCard(r){
+  let date = new Date(r.date).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+  let nets = r.playerNetTotals || r.playerTotals || r.players.map(()=>0);
+  let maxNet = Math.max(...nets);
+  let winnerIdxs = nets.map((t,i)=>t===maxNet?i:-1).filter(i=>i>=0);
+  let winnerNames = winnerIdxs.map(i=>r.players[i]).join(' & ');
+
+  let lbHtml = r.players.map((name,i)=>({name, t:nets[i]}))
+    .sort((a,b)=>b.t-a.t)
+    .map((p,rank)=>{
+      let sign = p.t > 0 ? '+' : '';
+      let cls = p.t > 0 ? 'tag-good' : p.t < 0 ? 'tag-bad' : '';
+      return `<div class="lb-row ${rank===0&&p.t>0?'lb-winner':''}">
+        <span class="lb-name">${esc(p.name)}</span>
+        <span class="lb-score ${cls}">${sign}$${p.t}</span>
+      </div>`;
+    }).join('');
+
+  let txns = calcSettlement(r.players, nets);
+  let settlHtml = txns.length
+    ? txns.map(t=>`<div class="settle-row">
+        <span class="settle-from">${esc(t.from)}</span>
+        <span class="settle-arrow">owes</span>
+        <span class="settle-to">${esc(t.to)}</span>
+        <span class="settle-amount">$${t.amount.toFixed(2)}</span>
+      </div>`).join('')
+    : `<div class="settle-all-square">All square — no payments needed.</div>`;
+
+  let scHead, scRows = '';
+  if(r.holeHistory){
+    scHead = `<th>#</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}<th>Result</th>`;
+    r.holeHistory.forEach(h=>{
+      scRows += `<tr>
+        <td>${h.holeNum}</td>
+        ${h.scores.map((s,i)=>`<td${i===h.bankerIdx?' style="color:var(--accent);font-weight:bold"':''}>${s}</td>`).join('')}
+        <td style="font-size:11px;text-align:left">${h.allTied ? 'Carryover' :
+          h.matchups.filter(m=>m.result!=='tie').map(m=>
+            m.result==='banker'
+              ? `${esc(r.players[m.playerIdx])} -$${m.amount}`
+              : `${esc(r.players[m.playerIdx])} +$${m.amount}`
+          ).join(', ')}</td>
+      </tr>`;
+    });
+  } else {
+    scHead = `<th>#</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}<th>$</th><th>Won by</th>`;
+    (r.scoreHistory||[]).forEach((scores,h)=>{
+      let pot = (r.pointsHistory||[])[h] || 0;
+      let winners = (r.winnersHistory||[])[h] || [];
+      scRows += `<tr>
+        <td>${h+1}</td>
+        ${scores.map((s,i)=>`<td class="${winners.includes(i)?'tag-good':''}">${s??'–'}</td>`).join('')}
+        <td>$${pot}</td>
+        <td>${winners.length===1 ? esc(r.players[winners[0]]) : '—'}</td>
+      </tr>`;
+    });
+  }
+
+  return `<div class="round-card" id="card-${r.id}">
+    <div class="round-card-header" onclick="toggleCard(${r.id})">
+      <div class="rch-left">
+        <div class="rch-date">${date}</div>
+        <div class="rch-course">${esc(r.course)}</div>
+        <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')} &nbsp;|&nbsp; Base $${r.baseValue}</div>
+      </div>
+      <div class="rch-result black-win">🏆 ${esc(winnerNames)}<br>+$${maxNet}</div>
+      <button class="rch-del" onclick="deleteRound(event,${r.id})" title="Delete">✕</button>
+      <div class="rch-chevron">›</div>
+    </div>
+    <div class="round-detail">
+      <div class="detail-section">
+        <h5>Net Totals</h5>
+        <div class="leaderboard">${lbHtml}</div>
+      </div>
+      <div class="detail-section">
+        <h5>Settlement</h5>
+        ${settlHtml}
+      </div>
+      <div class="detail-section">
+        <h5>Scorecard</h5>
+        <div class="sc-wrap">
+          <table class="sc-table">
+            <thead><tr>${scHead}</tr></thead>
+            <tbody>${scRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleCard(id){
+  let card = document.getElementById('card-'+id);
+  if(card) card.classList.toggle('expanded');
+}
+
+function deleteRound(e, id){
+  e.stopPropagation();
+  if(!confirm('Delete this round?')) return;
+  let history = loadHistory().filter(r=>r.id!==id);
+  saveHistory(history);
+  render();
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function calcSettlement(players, nets){
+  let creditors = [], debtors = [];
+  nets.forEach((v,i)=>{
+    if(v > 0.001) creditors.push({idx:i, amt:v});
+    else if(v < -0.001) debtors.push({idx:i, amt:-v});
+  });
+  creditors.sort((a,b)=>b.amt-a.amt);
+  debtors.sort((a,b)=>b.amt-a.amt);
+  let transactions = [], ci=0, di=0;
+  while(ci<creditors.length && di<debtors.length){
+    let c=creditors[ci], d=debtors[di];
+    let settle = Math.round(Math.min(c.amt, d.amt) * 100) / 100;
+    if(settle > 0) transactions.push({from:players[d.idx], to:players[c.idx], amount:settle});
+    c.amt -= settle; d.amt -= settle;
+    if(c.amt < 0.001) ci++;
+    if(d.amt < 0.001) di++;
+  }
+  return transactions;
+}
+
+/* ── STABLEFORD CARD ── */
+function renderStablefordCard(r){
+  let date = new Date(r.date).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+  let sorted = r.players.map((name,i)=>({name, pts:r.playerTotals[i]}))
+    .sort((a,b)=>b.pts-a.pts);
+  let winner = sorted[0];
+
+  let lbHtml = sorted.map((p,rank)=>`
+    <div class="lb-row ${rank===0?'lb-winner':''}">
+      <span class="lb-name">${rank===0?'🏆 ':''}${esc(p.name)}</span>
+      <span class="lb-score">${p.pts} pts</span>
+    </div>`).join('');
+
+  let scHead = `<th>#</th><th>Par</th><th>Yds</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
+  let scRows = '';
+  for(let h=0; h<r.scoreHistory.length; h++){
+    let scores = r.scoreHistory[h];
+    let pts = r.pointHistory[h];
+    let par = '-', yds = '-';
+    scRows += `<tr>
+      <td>${h+1}</td><td>${par}</td><td>${yds}</td>
+      ${scores.map((s,i)=>{
+        let p = pts[i];
+        let cls = p>=2?' class="tag-good"':p===0?' class="tag-bad"':'';
+        return `<td${cls}>${s}<br><small style="opacity:.6">${p}pt</small></td>`;
+      }).join('')}
+    </tr>`;
+  }
+  scRows += `<tr style="font-weight:bold;background:var(--bg-cell)">
+    <td colspan="3">Total</td>
+    ${r.playerTotals.map(t=>`<td>${t} pts</td>`).join('')}
+  </tr>`;
+
+  return `<div class="round-card" id="card-${r.id}">
+    <div class="round-card-header" onclick="toggleCard(${r.id})">
+      <div class="rch-left">
+        <div class="rch-date">${date}</div>
+        <div class="rch-course">${esc(r.course)}</div>
+        <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')}</div>
+      </div>
+      <div class="rch-result black-win">🏆 ${esc(winner.name)}<br>${winner.pts} pts</div>
+      <button class="rch-del" onclick="deleteRound(event,${r.id})" title="Delete">✕</button>
+      <div class="rch-chevron">›</div>
+    </div>
+    <div class="round-detail">
+      <div class="detail-section">
+        <h5>Final Standings</h5>
+        <div class="leaderboard">${lbHtml}</div>
+      </div>
+      <div class="detail-section">
+        <h5>Scorecard</h5>
+        <div class="sc-wrap">
+          <table class="sc-table">
+            <thead><tr>${scHead}</tr></thead>
+            <tbody>${scRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── MATCH PLAY CARD ── */
+function computeMatchPlayStandings(r){
+  return r.players.map((name, idx)=>{
+    let won=0, lost=0, halved=0, holesUp=0;
+    r.matchResults.forEach(m=>{
+      if(m.p1 !== idx && m.p2 !== idx) return;
+      let isP1 = m.p1 === idx;
+      if(m.status === 'p1'){
+        if(isP1){ won++; holesUp += m.holesUp; }
+        else { lost++; holesUp -= m.holesUp; }
+      } else if(m.status === 'p2'){
+        if(!isP1){ won++; holesUp += Math.abs(m.holesUp); }
+        else { lost++; holesUp -= Math.abs(m.holesUp); }
+      } else if(m.status === 'halved'){
+        halved++;
+      }
+    });
+    return {idx, name, won, lost, halved, holesUp};
+  }).sort((a,b)=> b.won - a.won || b.holesUp - a.holesUp);
+}
+
+function formatMatchResultFromRecord(m, totalHoles){
+  let lead = Math.abs(m.holesUp);
+  if(m.status === 'halved') return 'A/S';
+  if(!m.closedAt) return lead + ' up';
+  let holesRemaining = totalHoles - m.closedAt;
+  if(holesRemaining === 0) return lead + ' up';
+  return lead + '&' + holesRemaining;
+}
+
+function renderMatchPlayCard(r){
+  let date = new Date(r.date).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  let standings = computeMatchPlayStandings(r);
+  let winner = standings[0];
+
+  let lbHtml = standings.map((p,rank)=>{
+    let record = p.won + 'W ' + p.lost + 'L' + (p.halved ? ' ' + p.halved + 'H' : '');
+    return `<div class="lb-row ${rank===0?'lb-winner':''}">
+      <span class="lb-name">${rank===0?'🏆 ':''}${esc(p.name)}</span>
+      <span class="lb-score">${record}</span>
+    </div>`;
+  }).join('');
+
+  let duelHtml = (r.matchResults||[]).map(m=>{
+    let p1n = esc(r.players[m.p1]), p2n = esc(r.players[m.p2]);
+    let res = formatMatchResultFromRecord(m, r.totalHoles||18);
+    let text;
+    if(m.status === 'halved') text = p1n + ' halved ' + p2n + ' — A/S';
+    else {
+      let wn = m.status==='p1' ? p1n : p2n;
+      let ln = m.status==='p1' ? p2n : p1n;
+      text = wn + ' def. ' + ln + ' — ' + res;
+    }
+    return `<div style="font-size:13px;padding:4px 0;color:rgba(255,255,255,0.75);">${text}</div>`;
+  }).join('');
+
+  let scHead = `<th>#</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
+  let scRows = (r.scoreHistory||[]).map((scores,h)=>
+    `<tr><td>${h+1}</td>${scores.map(s=>`<td>${s}</td>`).join('')}</tr>`
+  ).join('');
+
+  let winRecord = winner.won + 'W ' + winner.lost + 'L' + (winner.halved ? ' ' + winner.halved + 'H' : '');
+
+  return `<div class="round-card" id="card-${r.id}">
+    <div class="round-card-header" onclick="toggleCard(${r.id})">
+      <div class="rch-left">
+        <div class="rch-date">${date}</div>
+        <div class="rch-course">${esc(r.course)}</div>
+        <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')}</div>
+      </div>
+      <div class="rch-result black-win">🏆 ${esc(winner.name)}<br>${winRecord}</div>
+      <button class="rch-del" onclick="deleteRound(event,${r.id})" title="Delete">✕</button>
+      <div class="rch-chevron">›</div>
+    </div>
+    <div class="round-detail">
+      <div class="detail-section">
+        <h5>Final Standings</h5>
+        <div class="leaderboard">${lbHtml}</div>
+      </div>
+      <div class="detail-section">
+        <h5>Duel Results</h5>
+        ${duelHtml}
+      </div>
+      <div class="detail-section">
+        <h5>Scorecard</h5>
+        <div class="sc-wrap">
+          <table class="sc-table">
+            <thead><tr>${scHead}</tr></thead>
+            <tbody>${scRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── STANDINGS PANELS ── */
+function stnRankCls(i){ return i===0?'r1':i===1?'r2':i===2?'r3':''; }
+
+function buildPointsStandings(rounds){
+  const players = {};
+  for(const r of rounds){
+    if(!r.players || !r.playerTotals) continue;
+    const maxPts = Math.max(...r.playerTotals);
+    r.players.forEach((name, i)=>{
+      if(!players[name]) players[name] = {name, rounds:0, totalPts:0, wins:0};
+      const p = players[name];
+      p.rounds++;
+      p.totalPts += (r.playerTotals[i] || 0);
+      if(r.playerTotals[i] === maxPts) p.wins++;
+    });
+  }
+  return Object.values(players).sort((a,b)=>b.totalPts-a.totalPts||b.wins-a.wins);
+}
+
+function buildBankerStandings(rounds){
+  const players = {};
+  for(const r of rounds){
+    if(!r.players || !r.playerNetTotals) continue;
+    const maxNet = Math.max(...r.playerNetTotals);
+    r.players.forEach((name, i)=>{
+      if(!players[name]) players[name] = {name, rounds:0, netBalance:0, wins:0};
+      const p = players[name];
+      p.rounds++;
+      p.netBalance += (r.playerNetTotals[i] || 0);
+      if(r.playerNetTotals[i] === maxNet) p.wins++;
+    });
+  }
+  return Object.values(players).sort((a,b)=>b.netBalance-a.netBalance);
+}
+
+function buildMatchPlayStandings(rounds){
+  const players = {};
+  const roundsForPlayer = {};
+  for(const r of rounds){
+    if(!r.players || !r.matchResults) continue;
+    for(const m of r.matchResults){
+      const p1Name = r.players[m.p1], p2Name = r.players[m.p2];
+      if(!p1Name || !p2Name) continue;
+      [p1Name, p2Name].forEach(name=>{
+        if(!players[name]) players[name] = {name, wins:0, losses:0, halved:0};
+        if(!roundsForPlayer[name]) roundsForPlayer[name] = new Set();
+        roundsForPlayer[name].add(r.id);
+      });
+      if(m.status==='halved'){ players[p1Name].halved++; players[p2Name].halved++; }
+      else if(m.status==='p1'){ players[p1Name].wins++; players[p2Name].losses++; }
+      else if(m.status==='p2'){ players[p2Name].wins++; players[p1Name].losses++; }
+    }
+  }
+  return Object.values(players).map(p=>({
+    ...p,
+    rounds: roundsForPlayer[p.name] ? roundsForPlayer[p.name].size : 0,
+    total: p.wins+p.losses+p.halved,
+    winPct: p.wins+p.losses+p.halved > 0
+      ? Math.round((p.wins+p.halved*0.5)/(p.wins+p.losses+p.halved)*100) : 0
+  })).sort((a,b)=>b.wins-a.wins||b.halved-a.halved||a.losses-b.losses);
+}
+
+function renderStandingsPanelPoints(rows, label){
+  if(!rows.length) return '';
+  const thead = `<thead><tr>
+    <th class="stn-rank">#</th><th>Player</th>
+    <th class="num">Rnds</th><th class="num">Pts</th>
+    <th class="num">Avg</th><th class="num">W</th>
+  </tr></thead>`;
+  const tbody = rows.map((p,i)=>{
+    const avg = p.rounds>0 ? (p.totalPts/p.rounds).toFixed(1) : '—';
+    return `<tr>
+      <td class="stn-rank ${stnRankCls(i)}">${i+1}</td>
+      <td class="stn-name${i===0?' leader':''}">${esc(p.name)}</td>
+      <td class="num">${p.rounds}</td>
+      <td class="num">${p.totalPts.toFixed(1)}</td>
+      <td class="num">${avg}</td>
+      <td class="num">${p.wins}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="stn-panel">
+    <div class="stn-panel-title">All-Time Standings</div>
+    <table class="stn-table">${thead}<tbody>${tbody}</tbody></table>
+  </div>`;
+}
+
+function renderStandingsPanelBanker(rows){
+  if(!rows.length) return '';
+  const thead = `<thead><tr>
+    <th class="stn-rank">#</th><th>Player</th>
+    <th class="num">Rnds</th><th class="num">Balance</th><th class="num">W</th>
+  </tr></thead>`;
+  const tbody = rows.map((p,i)=>{
+    let balHtml;
+    if(p.netBalance===0) balHtml=`<span class="stn-zero">$0</span>`;
+    else if(p.netBalance>0) balHtml=`<span class="stn-pos">+$${Math.abs(p.netBalance).toFixed(2).replace(/\.00$/,'')}</span>`;
+    else balHtml=`<span class="stn-neg">-$${Math.abs(p.netBalance).toFixed(2).replace(/\.00$/,'')}</span>`;
+    return `<tr>
+      <td class="stn-rank ${stnRankCls(i)}">${i+1}</td>
+      <td class="stn-name${i===0?' leader':''}">${esc(p.name)}</td>
+      <td class="num">${p.rounds}</td>
+      <td class="num">${balHtml}</td>
+      <td class="num">${p.wins}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="stn-panel">
+    <div class="stn-panel-title">All-Time Standings</div>
+    <table class="stn-table">${thead}<tbody>${tbody}</tbody></table>
+  </div>`;
+}
+
+function renderStandingsPanelMatch(rows){
+  if(!rows.length) return '';
+  const thead = `<thead><tr>
+    <th class="stn-rank">#</th><th>Player</th>
+    <th class="num">Rnds</th><th class="num">W</th><th class="num">L</th>
+    <th class="num">H</th><th class="num">Win%</th>
+  </tr></thead>`;
+  const tbody = rows.map((p,i)=>`<tr>
+    <td class="stn-rank ${stnRankCls(i)}">${i+1}</td>
+    <td class="stn-name${i===0?' leader':''}">${esc(p.name)}</td>
+    <td class="num">${p.rounds}</td>
+    <td class="num">${p.wins}</td>
+    <td class="num">${p.losses}</td>
+    <td class="num">${p.halved}</td>
+    <td class="num"><span class="stn-pct">${p.winPct}%</span></td>
+  </tr>`).join('');
+  return `<div class="stn-panel">
+    <div class="stn-panel-title">All-Time Standings</div>
+    <table class="stn-table">${thead}<tbody>${tbody}</tbody></table>
+  </div>`;
+}
+
+// Bootstrap
+document.body.dataset.game = activeTab;
+switchTab(activeTab);
+</script>
+</body>
+</html>

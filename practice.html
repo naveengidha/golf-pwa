@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f4d2b">
+<title>Regular Round</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:Arial,Helvetica,sans-serif;background:#1f4d2b;margin:0;padding:0;color:#fff;display:flex;flex-direction:column;min-height:100vh;}
+.topnav{display:flex;align-items:center;background:#1c4729;padding:10px 16px;gap:12px;flex-shrink:0;border-bottom:2px solid #ffd447;box-shadow:0 2px 12px rgba(0,0,0,0.5);}
+.back-btn{background:none;border:none;color:#ffd447;font-size:15px;font-weight:bold;cursor:pointer;padding:4px 8px 4px 0;white-space:nowrap;display:flex;align-items:center;gap:6px;width:auto;}
+.back-btn:hover{color:#ffcc2a;}
+.topnav-title{font-size:15px;font-weight:bold;color:#ffd447;flex:1;text-align:center;letter-spacing:.5px;}
+.topnav-spacer{width:70px;}
+h2{text-align:center;margin-top:0;color:#ffd447;letter-spacing:.5px;}
+h3{text-align:center;margin-top:0;color:rgba(255,255,255,0.75);}
+.scroll-area{flex:1;overflow-y:auto;padding:20px 16px 40px;display:flex;justify-content:center;}
+.container{
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 8px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 8px),
+    #14281c;
+  border:1px solid rgba(184,150,46,0.35);
+  padding:24px 20px;border-radius:12px;width:100%;max-width:480px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative;
+}
+.setup-player-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.name-input{flex:1;padding:10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);border-bottom:2px solid rgba(184,150,46,0.5);color:white;font-size:15px;background:rgba(0,0,0,0.3);}
+.name-input::placeholder{color:rgba(255,255,255,0.35);}
+.row-setting{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.row-setting label{font-size:12px;white-space:nowrap;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.5px;}
+.select-input{padding:8px 10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);font-size:15px;background:rgba(0,0,0,0.3);color:white;}
+.course-input{width:100%;margin-bottom:12px;padding:10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);font-size:15px;background:rgba(0,0,0,0.3);color:white;}
+#nameError{color:#ff6b6b;font-size:13px;display:none;}
+button{width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-weight:bold;background:linear-gradient(135deg,#c9a227,#ffd447,#c9a227);color:#1a1a0a;cursor:pointer;margin-bottom:4px;box-shadow:0 2px 8px rgba(184,150,46,0.4);letter-spacing:.5px;}
+button:hover,button:active{background:linear-gradient(135deg,#b8912e,#ffc93a,#b8912e);}
+button.btn-secondary{background:transparent;border:1px solid rgba(184,150,46,0.4);color:rgba(255,212,71,0.75);font-size:14px;padding:10px;box-shadow:none;letter-spacing:.5px;}
+button.btn-secondary:hover,button.btn-secondary:active{background:rgba(184,150,46,0.08);border-color:rgba(255,212,71,0.6);color:#ffd447;}
+.hidden{display:none!important;}
+.add-player-btn{background:rgba(255,212,71,0.12);border:1px solid rgba(255,212,71,0.35);color:#ffd447;font-size:18px;font-weight:bold;width:36px;height:36px;border-radius:6px;cursor:pointer;flex-shrink:0;padding:0;margin-bottom:0;box-shadow:none;letter-spacing:0;}
+.add-player-btn:active{background:rgba(255,212,71,0.25);}
+.remove-player-btn{background:none;border:none;color:rgba(255,77,77,0.5);font-size:18px;cursor:pointer;flex-shrink:0;padding:0;width:auto;margin-bottom:0;box-shadow:none;}
+.remove-player-btn:hover{color:#ff4d4d;}
+.hole-progress{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:14px;}
+.hp-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);}
+.hp-dot.current{background:#ffd447;color:#1a1a0a;border-color:#ffd447;}
+.hp-dot.done{background:rgba(184,150,46,0.25);color:#ffd447;border-color:rgba(184,150,46,0.4);}
+.hp-dot.partial{background:rgba(255,193,7,0.15);color:#ffc107;border-color:rgba(255,193,7,0.3);}
+.hole-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.hole-card-num{font-size:13px;font-weight:bold;letter-spacing:1.5px;color:rgba(255,255,255,0.5);text-transform:uppercase;}
+.hole-card-meta{font-size:13px;color:#ffd447;font-weight:bold;letter-spacing:.5px;}
+.player-accordion{border-top:1px solid rgba(255,255,255,0.07);}
+.player-accordion:first-of-type{border-top:none;}
+.player-acc-header{display:flex;align-items:center;gap:10px;padding:12px 4px;cursor:pointer;}
+.player-acc-header.expanded{background:rgba(184,150,46,0.06);border-left:3px solid #ffd447;padding-left:8px;margin-left:-4px;border-radius:4px;}
+.player-acc-chevron{font-size:10px;color:rgba(255,255,255,0.3);width:12px;flex-shrink:0;}
+.player-acc-name{flex:1;font-size:13px;font-weight:bold;color:#ffd447;text-transform:uppercase;letter-spacing:.5px;}
+.player-acc-score{font-size:15px;font-weight:bold;font-family:'Courier New',monospace;color:rgba(255,255,255,0.25);}
+.player-acc-score.scored{color:#fff;}
+.player-acc-body{display:none;padding:0 4px 12px;}
+.player-acc-body.open{display:block;}
+.hole-card-field{margin-bottom:14px;}
+.hole-card-label{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.hole-card-score-input{width:80px;padding:8px 4px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);text-align:center;font-size:22px;font-weight:bold;background:rgba(0,0,0,0.35);color:#fff;font-family:'Courier New',monospace;}
+.yn-group{display:flex;gap:8px;margin-bottom:4px;}
+.yn-btn{width:auto;flex:1;padding:8px;border-radius:6px;font-size:13px;font-weight:bold;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);box-shadow:none;margin-bottom:0;letter-spacing:0;}
+.yn-btn.active-yes{background:rgba(46,204,113,0.15);border-color:#2ecc71;color:#2ecc71;}
+.yn-btn.active-no{background:rgba(224,112,112,0.15);border-color:#e07070;color:#e07070;}
+.miss-dir-row{display:flex;gap:6px;margin-top:6px;}
+.miss-dir-btn{width:auto;flex:1;padding:6px;border-radius:6px;font-size:12px;font-weight:bold;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.35);box-shadow:none;margin-bottom:0;letter-spacing:0;}
+.miss-dir-btn.active{background:rgba(255,152,0,0.15);border-color:#ff9800;color:#ff9800;}
+.putts-pen-row{display:flex;gap:16px;}
+.putts-pen-row>div{flex:1;}
+.stepper{display:flex;align-items:center;gap:8px;}
+.stepper button{width:32px;height:32px;padding:0;border-radius:6px;font-size:18px;font-weight:bold;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#fff;box-shadow:none;margin-bottom:0;flex-shrink:0;}
+.stepper span{font-size:18px;font-weight:bold;font-family:'Courier New',monospace;min-width:24px;text-align:center;}
+.hole-nav{display:flex;gap:10px;margin-top:16px;}
+.hole-nav button{flex:1;margin-bottom:0;}
+.summary-bar{position:fixed;bottom:0;left:0;right:0;background:#1c4729;border-top:1px solid rgba(184,150,46,0.3);padding:8px 12px;display:none;gap:0;justify-content:space-around;align-items:center;z-index:100;}
+.summary-bar.active{display:flex;}
+.sum-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;}
+.sum-item>span:first-child{font-size:13px;font-weight:bold;font-family:'Courier New',monospace;}
+.sum-item small{font-size:9px;color:rgba(255,212,71,0.5);letter-spacing:.5px;text-transform:uppercase;}
+.sum-good{color:#ffd447;}
+.sum-bad{color:#ff7070;}
+.sum-neutral{color:rgba(255,255,255,0.6);}
+.final-standings{margin:16px 0;}
+.final-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;margin-bottom:6px;border-radius:6px;background:rgba(0,0,0,0.3);font-size:15px;border:1px solid rgba(184,150,46,0.15);}
+.final-row.winner{border-color:rgba(255,212,71,0.5);background:rgba(255,212,71,0.06);}
+.final-name{font-weight:bold;letter-spacing:.5px;}
+.final-score{font-family:'Courier New',monospace;font-size:18px;font-weight:bold;}
+.rank-badge{display:inline-block;width:22px;height:22px;line-height:22px;border-radius:3px;text-align:center;font-size:10px;font-weight:bold;margin-right:8px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
+.rank-badge.r1{background:#ffd447;color:#1a1a0a;}
+.rank-badge.r2{background:#b0b0b0;color:#1a1a0a;}
+.rank-badge.r3{background:#cd7f32;color:#fff;}
+table{width:100%;border-collapse:collapse;margin-top:6px;}
+th,td{border:1px solid rgba(184,150,46,0.15);padding:5px 4px;text-align:center;font-size:12px;}
+thead th{background:rgba(0,0,0,0.4);color:#ffd447;letter-spacing:.5px;text-transform:uppercase;font-size:10px;}
+td{font-family:'Courier New',monospace;}
+tfoot td{background:rgba(0,0,0,0.4);color:#ffd447;font-weight:bold;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.5px;}
+td.sc-under{color:#ffd447;}
+td.sc-over{color:#ff7070;}
+td.sc-eagle{color:#ffd447;font-weight:bold;}
+.par-legend{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;}
+.legend-pill{font-size:10px;padding:3px 8px;border-radius:20px;letter-spacing:.5px;background:rgba(0,0,0,0.3);border:1px solid rgba(184,150,46,0.2);color:rgba(255,255,255,0.5);}
+.legend-pill span{font-weight:bold;}
+.legend-pill span.eagle{color:#ffd447;}
+.legend-pill span.birdie{color:#ffd447;}
+.legend-pill span.par{color:rgba(255,255,255,0.75);}
+.legend-pill span.bogey{color:#ff9944;}
+.flip-card{width:100%;}
+.flip-inner{position:relative;transform-style:preserve-3d;transition:transform 0.45s ease;}
+.flip-inner.flipped{transform:rotateY(180deg);}
+.flip-front{position:relative;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.flip-back{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  transform:rotateY(180deg);
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 8px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 8px),
+    #14281c;
+  border:1px solid rgba(184,150,46,0.35);
+  padding:24px 20px;border-radius:12px;
+}
+.flip-inner.flipped .flip-front{position:absolute;inset:0;}
+.flip-inner.flipped .flip-back{position:relative;inset:auto;}
+.flip-btn{position:absolute;bottom:14px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(255,212,71,0.12);border:1px solid rgba(255,212,71,0.35);color:#ffd447;font-size:13px;font-weight:bold;letter-spacing:0;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;text-transform:none;z-index:10;box-shadow:none;}
+.flip-btn:hover,.flip-btn:active{background:rgba(255,212,71,0.25);}
+.flip-back-btn{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);font-size:13px;font-weight:bold;padding:6px 14px;border-radius:4px;cursor:pointer;width:auto;margin-bottom:20px;letter-spacing:.5px;text-transform:none;box-shadow:none;}
+.flip-back-btn:hover,.flip-back-btn:active{background:rgba(255,255,255,0.07);color:#fff;}
+.rules-title{font-size:18px;font-weight:bold;color:#ffd447;text-align:center;margin:0 0 6px;letter-spacing:1px;}
+.rules-sub{text-align:center;color:rgba(255,255,255,0.5);font-size:12px;margin:0 0 20px;letter-spacing:1px;text-transform:uppercase;}
+.rules-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.rules-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:14px;}
+.rules-table td:first-child{color:rgba(255,255,255,0.5);width:45%;}
+.rules-table td:last-child{font-weight:bold;font-family:'Courier New',monospace;color:#ffd447;}
+.rules-note{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;text-align:center;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <button class="back-btn" onclick="goBack()">‹ Menu</button>
+  <div class="topnav-title" id="topnavTitle">Regular Round</div>
+  <div class="topnav-spacer"></div>
+</div>
+
+<div class="scroll-area">
+<div class="container">
+
+  <!-- SETUP -->
+  <div id="setupScreen">
+    <div class="flip-card">
+      <div class="flip-inner" id="setupFlip">
+
+        <div class="flip-front">
+          <h2>Round Setup</h2>
+
+          <div class="par-legend">
+            <div class="legend-pill">Eagle <span class="eagle">−2</span></div>
+            <div class="legend-pill">Birdie <span class="birdie">−1</span></div>
+            <div class="legend-pill">Par <span class="par">E</span></div>
+            <div class="legend-pill">Bogey <span class="bogey">+1</span></div>
+            <div class="legend-pill">Double <span class="double">+2</span></div>
+          </div>
+
+          <div id="playerRows">
+            <div class="setup-player-row" id="row1">
+              <input class="name-input" id="name0" placeholder="Player 1 (required)">
+              <button class="add-player-btn" onclick="addPlayer()" title="Add player">+</button>
+            </div>
+          </div>
+
+          <div class="row-setting" style="margin-top:4px;">
+            <label>Holes:</label>
+            <select id="holesSelect" class="select-input">
+              <option value="9">9</option>
+              <option value="18" selected>18</option>
+            </select>
+          </div>
+          <select class="course-input" id="courseSelect"></select>
+          <input type="date" class="course-input" id="roundDate">
+          <button onclick="startGame()">Start Round</button>
+          <div id="nameError" style="margin-top:6px;">Enter at least one player name.</div>
+        </div>
+
+        <div class="flip-back">
+          <button class="flip-back-btn" onclick="flipCard('setupFlip')">‹ Back</button>
+          <div class="rules-title">⛳ Regular Round</div>
+          <div class="rules-sub">1–4 players · stroke play</div>
+          <table class="rules-table">
+            <tr><td>Eagle or better</td><td>−2 or less</td></tr>
+            <tr><td>Birdie</td><td>−1</td></tr>
+            <tr><td>Par</td><td>E</td></tr>
+            <tr><td>Bogey</td><td>+1</td></tr>
+            <tr><td>Double+</td><td>+2 or more</td></tr>
+          </table>
+          <div class="rules-note">
+            Track score, tee shots, approach, putts &amp; penalties per hole.<br><br>
+            Lowest total strokes wins.
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <button class="flip-btn" onclick="flipCard('setupFlip')" title="How to play">i</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="gameScreen" class="hidden">
+    <div class="hole-progress" id="holeProgress"></div>
+    <div class="hole-card-header">
+      <span class="hole-card-num" id="holeNumLabel">HOLE 1</span>
+      <span class="hole-card-meta" id="holeMetaLabel">PAR 4</span>
+    </div>
+    <div id="accordions"></div>
+    <div class="hole-nav" id="holeNav"></div>
+  </div>
+
+  <!-- FINAL -->
+  <div id="finalScreen" class="hidden">
+    <h2>Round Complete</h2>
+    <div class="final-standings" id="finalStandings"></div>
+    <br>
+    <div style="overflow-x:auto;">
+      <table id="finalTable"></table>
+    </div>
+    <br>
+    <button onclick="window.location.reload()">New Round</button>
+    <button class="btn-secondary" style="margin-top:4px;" onclick="window.location.href='index.html'">‹ Menu</button>
+  </div>
+
+</div>
+</div>
+
+<!-- summary bar -->
+<div class="summary-bar" id="summaryBar"></div>
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+let totalHoles = 18;
+let playerNames = [];
+let players = [];      // [{name, data:[{par,distance,score,pts,teeDir,air,airDir,putts,pen}]}]
+let holeIdx = 0;
+let expandedIdx = 0;
+let courses = [], selectedCourse = null;
+let playerCount = 1;
+
+/* ── Course loading ── */
+document.getElementById('roundDate').value = new Date().toLocaleDateString('en-CA');
+fetch('courses.json')
+  .then(r=>r.json())
+  .then(data=>{
+    courses = data.courses||[];
+    let sel = document.getElementById('courseSelect');
+    courses.forEach((c,i)=>{
+      let o=document.createElement('option'); o.value=i; o.textContent=c.name; sel.appendChild(o);
+    });
+  }).catch(()=>{
+    let sel=document.getElementById('courseSelect');
+    let o=document.createElement('option'); o.textContent='Course data unavailable'; o.value=''; sel.appendChild(o);
+  });
+
+/* ── Player row management ── */
+function addPlayer(){
+  if(playerCount >= 4) return;
+  playerCount++;
+  let rows = document.getElementById('playerRows');
+  let lastAdd = rows.querySelector('.add-player-btn');
+  if(lastAdd) lastAdd.remove();
+  let div = document.createElement('div');
+  div.className = 'setup-player-row';
+  div.id = 'row'+playerCount;
+  let isLast = playerCount === 4;
+  div.innerHTML = `
+    <input class="name-input" id="name${playerCount-1}" placeholder="Player ${playerCount}">
+    ${!isLast ? '<button class="add-player-btn" onclick="addPlayer()" title="Add player">+</button>' : ''}
+    <button class="remove-player-btn" onclick="removePlayer(${playerCount})" title="Remove">×</button>`;
+  rows.appendChild(div);
+}
+
+function removePlayer(n){
+  let row = document.getElementById('row'+n);
+  if(row) row.remove();
+  playerCount--;
+  let rows = document.getElementById('playerRows');
+  let allRows = rows.querySelectorAll('.setup-player-row');
+  let lastRow = allRows[allRows.length-1];
+  if(lastRow && !lastRow.querySelector('.add-player-btn') && playerCount < 4){
+    let btn = document.createElement('button');
+    btn.className = 'add-player-btn';
+    btn.title = 'Add player';
+    btn.textContent = '+';
+    btn.onclick = addPlayer;
+    let removeBtn = lastRow.querySelector('.remove-player-btn');
+    if(removeBtn) lastRow.insertBefore(btn, removeBtn);
+    else lastRow.appendChild(btn);
+  }
+}
+
+/* ── Game start ── */
+function startGame(){
+  let names = [];
+  document.querySelectorAll('#playerRows .name-input').forEach(inp=>{
+    let v = inp.value.trim();
+    if(v) names.push(v);
+  });
+  if(names.length < 1){
+    document.getElementById('nameError').style.display = 'block';
+    return;
+  }
+  document.getElementById('nameError').style.display = 'none';
+
+  playerNames = names;
+  totalHoles = Number(document.getElementById('holesSelect').value)||18;
+  let idx = document.getElementById('courseSelect').value;
+  if(idx !== '') selectedCourse = courses[idx]||null;
+
+  let holeData = Array.from({length:totalHoles}, (_,i)=>{
+    let h = selectedCourse && selectedCourse.holes[i] ? selectedCourse.holes[i] : {par:4, distance:'-'};
+    return {par:h.par, distance:String(h.distance)};
+  });
+
+  players = names.map(name=>({
+    name,
+    data: holeData.map(h=>({...h, score:null, pts:false, teeDir:'', air:false, airDir:'', putts:0, pen:0}))
+  }));
+
+  holeIdx = 0;
+  expandedIdx = 0;
+
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  document.getElementById('summaryBar').classList.add('active');
+  renderHole();
+}
+
+/* ── Hole rendering ── */
+function renderHole(){
+  let i = holeIdx;
+  let holeData0 = players[0].data[i];
+
+  document.getElementById('topnavTitle').textContent = `Regular Round — Hole ${i+1}/${totalHoles}`;
+  document.getElementById('holeNumLabel').textContent = `HOLE ${i+1}`;
+  document.getElementById('holeMetaLabel').textContent = `PAR ${holeData0.par}${holeData0.distance !== '-' ? ' · ' + holeData0.distance + ' YDS' : ''}`;
+
+  // Progress dots
+  let dots = Array.from({length:totalHoles}, (_,n)=>{
+    let scored = players.filter(p=>p.data[n].score !== null).length;
+    let cls = n===i ? 'current' : scored===players.length ? 'done' : scored>0 ? 'partial' : '';
+    return `<div class="hp-dot ${cls}" onclick="goToHole(${n})">${n+1}</div>`;
+  }).join('');
+  document.getElementById('holeProgress').innerHTML = dots;
+
+  // Accordions
+  let accordions = players.map((p, pi)=>{
+    let h = p.data[i];
+    let isOpen = pi === expandedIdx;
+    let scoreDisplay = h.score !== null ? h.score : '–';
+    let scoreClass = h.score !== null ? 'scored' : '';
+
+    let teeSection = '';
+    if(h.par !== 3){
+      let teeDirRow = !h.pts ? `<div class="miss-dir-row">${['L','R'].map(d=>`<button class="miss-dir-btn ${h.teeDir===d?'active':''}" onclick="holeSetDir(${i},${pi},'teeDir','${d}')">${d}</button>`).join('')}</div>` : '';
+      teeSection = `<div class="hole-card-field">
+        <div class="hole-card-label">Playable Tee Shot</div>
+        <div class="yn-group">
+          <button class="yn-btn ${h.pts?'active-yes':''}" onclick="holeToggle(${i},${pi},'pts',true)">✓ Yes</button>
+          <button class="yn-btn ${!h.pts?'active-no':''}" onclick="holeToggle(${i},${pi},'pts',false)">✗ No</button>
+        </div>${teeDirRow}
+      </div>`;
+    }
+
+    let appDirRow = !h.air ? `<div class="miss-dir-row">${['L','R','S','Lo'].map(d=>`<button class="miss-dir-btn ${h.airDir===d?'active':''}" onclick="holeSetDir(${i},${pi},'airDir','${d}')">${d}</button>`).join('')}</div>` : '';
+
+    return `<div class="player-accordion">
+      <div class="player-acc-header ${isOpen?'expanded':''}" onclick="toggleAccordion(${pi})">
+        <span class="player-acc-chevron">${isOpen?'▼':'▶'}</span>
+        <span class="player-acc-name">${esc(p.name)}</span>
+        <span class="player-acc-score ${scoreClass}">${scoreDisplay}</span>
+      </div>
+      <div class="player-acc-body ${isOpen?'open':''}">
+        <div class="hole-card-field">
+          <div class="hole-card-label">Score</div>
+          <input class="hole-card-score-input" type="number" inputmode="numeric" min="1" max="15"
+            value="${h.score!==null?h.score:''}" placeholder="–"
+            onchange="holeSetScore(${i},${pi},this.value)">
+        </div>
+        ${teeSection}
+        <div class="hole-card-field">
+          <div class="hole-card-label">Approach in Regulation</div>
+          <div class="yn-group">
+            <button class="yn-btn ${h.air?'active-yes':''}" onclick="holeToggle(${i},${pi},'air',true)">✓ Yes</button>
+            <button class="yn-btn ${!h.air?'active-no':''}" onclick="holeToggle(${i},${pi},'air',false)">✗ No</button>
+          </div>${appDirRow}
+        </div>
+        <div class="hole-card-field">
+          <div class="putts-pen-row">
+            <div>
+              <div class="hole-card-label">Putts</div>
+              <div class="stepper">
+                <button onclick="holeStep(${i},${pi},'putts',-1)">−</button>
+                <span>${h.putts}</span>
+                <button onclick="holeStep(${i},${pi},'putts',1)">+</button>
+              </div>
+            </div>
+            <div>
+              <div class="hole-card-label">Penalties</div>
+              <div class="stepper">
+                <button onclick="holeStep(${i},${pi},'pen',-1)">−</button>
+                <span>${h.pen}</span>
+                <button onclick="holeStep(${i},${pi},'pen',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('accordions').innerHTML = accordions;
+
+  // Nav
+  let isFirst = i === 0, isLast = i === totalHoles - 1;
+  let navBack = isFirst
+    ? `<button class="btn-secondary" style="opacity:.35;pointer-events:none;">← Back</button>`
+    : `<button class="btn-secondary" onclick="goToHole(${i-1})">← Back</button>`;
+  let navNext = isLast
+    ? `<button onclick="promptFinish()">Finish Round →</button>`
+    : `<button onclick="goToHole(${i+1})">Next Hole →</button>`;
+  document.getElementById('holeNav').innerHTML = navBack + navNext;
+
+  updateSummaryBar();
+}
+
+function toggleAccordion(pi){
+  expandedIdx = expandedIdx === pi ? -1 : pi;
+  renderHole();
+}
+
+function goToHole(i){ holeIdx = i; renderHole(); }
+
+function holeSetScore(i, pi, val){
+  players[pi].data[i].score = val !== '' ? parseInt(val) : null;
+  renderHole();
+}
+function holeToggle(i, pi, key, val){
+  let h = players[pi].data[i];
+  h[key] = val;
+  if(val && key==='pts') h.teeDir = '';
+  if(val && key==='air') h.airDir = '';
+  renderHole();
+}
+function holeSetDir(i, pi, key, val){
+  let h = players[pi].data[i];
+  h[key] = h[key]===val ? '' : val;
+  renderHole();
+}
+function holeStep(i, pi, key, d){
+  let h = players[pi].data[i];
+  h[key] = Math.max(0, h[key]+d);
+  renderHole();
+}
+
+/* ── Summary bar ── */
+function updateSummaryBar(){
+  let pi = Math.max(0, expandedIdx);
+  if(pi >= players.length) pi = 0;
+  let data = players[pi].data;
+  let scored = data.filter(h=>h.score!==null);
+  if(!scored.length){
+    document.getElementById('summaryBar').innerHTML = `<div class="sum-item"><span class="sum-neutral">${esc(players[pi].name)}</span><small>player</small></div>`;
+    return;
+  }
+  let totalGross = scored.reduce((s,h)=>s+h.score,0);
+  let totalPar = scored.reduce((s,h)=>s+h.par,0);
+  let diff = totalGross - totalPar;
+  let diffStr = diff===0?'E':diff>0?'+'+diff:String(diff);
+  let firOpp=0, firHit=0, girHit=0, totalPutts=0, totalPen=0;
+  scored.forEach(h=>{
+    if(h.par!==3){ firOpp++; if(h.pts) firHit++; }
+    if(h.air) girHit++;
+    totalPutts += h.putts;
+    totalPen += h.pen;
+  });
+  let firPct = firOpp>0 ? Math.round(firHit/firOpp*100)+'%' : '–';
+  let girPct = Math.round(girHit/scored.length*100)+'%';
+  let avgPutts = (totalPutts/scored.length).toFixed(1);
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="sum-item"><span class="sum-neutral" style="font-size:11px;color:#ffd700">${esc(players[pi].name.length>7?players[pi].name.slice(0,7)+'…':players[pi].name)}</span><small>player</small></div>
+    <div class="sum-item"><span class="${diff<=0?'sum-good':'sum-bad'}">${diffStr}</span><small>to par</small></div>
+    <div class="sum-item"><span class="${firOpp>0&&firHit/firOpp>=0.6?'sum-good':'sum-bad'}">${firPct}</span><small>tee%</small></div>
+    <div class="sum-item"><span class="${girHit/scored.length>=0.6?'sum-good':'sum-bad'}">${girPct}</span><small>app%</small></div>
+    <div class="sum-item"><span class="sum-neutral">${avgPutts}</span><small>p/hole</small></div>
+    <div class="sum-item"><span class="${totalPen===0?'sum-good':'sum-bad'}">${totalPen}</span><small>pen</small></div>`;
+}
+
+/* ── Finish ── */
+function promptFinish(){
+  let anyUnscored = players.some(p=>p.data.some(h=>h.score===null));
+  if(anyUnscored){
+    if(!confirm('Some holes have no score. Finish anyway?')) return;
+  }
+  endGame();
+}
+
+function endGame(){
+  saveRound();
+  document.getElementById('gameScreen').classList.add('hidden');
+  document.getElementById('summaryBar').classList.remove('active');
+  document.getElementById('finalScreen').classList.remove('hidden');
+  document.getElementById('topnavTitle').textContent = 'Regular Round';
+
+  let totalPar = players[0].data.reduce((s,h)=>s+h.par,0);
+  let playerTotals = players.map(p=>p.data.reduce((s,h)=>s+(h.score||0),0));
+  let sorted = players.map((p,i)=>({name:p.name, gross:playerTotals[i], diff:playerTotals[i]-totalPar}))
+    .sort((a,b)=>a.gross-b.gross);
+
+  let rankCls = ['r1','r2','r3'];
+  document.getElementById('finalStandings').innerHTML = sorted.map((p,rank)=>{
+    let diffStr = p.diff>0?'+'+p.diff:p.diff===0?'E':String(p.diff);
+    let scoreColor = p.diff<0?'#4caf76':p.diff>0?'#ff7070':'rgba(255,255,255,0.75)';
+    return `<div class="final-row ${rank===0?'winner':''}">
+      <span class="final-name"><span class="rank-badge ${rankCls[rank]||''}">${rank+1}</span>${rank===0?'🏆 ':''}${esc(p.name)}</span>
+      <span class="final-score" style="color:${scoreColor}">${p.gross} <small style="font-size:13px;opacity:.8">(${diffStr})</small></span>
+    </div>`;
+  }).join('');
+
+  // Scorecard
+  let cols = ['#','Par','Yds',...players.map(p=>p.name)];
+  let thead = '<thead><tr>'+cols.map(c=>`<th>${esc(String(c))}</th>`).join('')+'</tr></thead>';
+  let rows = players[0].data.map((h,i)=>{
+    let row = `<tr><td>${i+1}</td><td>${h.par}</td><td>${h.distance}</td>`;
+    players.forEach(p=>{
+      let s = p.data[i].score;
+      let cls = s===null?'':toParClass(s,h.par);
+      row += `<td class="${cls}">${s??'–'}</td>`;
+    });
+    return row+'</tr>';
+  }).join('');
+  let tfoot = '<tfoot><tr><td colspan="3">TOTAL</td>'+playerTotals.map(t=>`<td>${t}</td>`).join('')+'</tr></tfoot>';
+  document.getElementById('finalTable').innerHTML = thead+'<tbody>'+rows+'</tbody>'+tfoot;
+}
+
+function saveRound(){
+  try{
+    let courseName = selectedCourse ? selectedCourse.name : 'Unknown Course';
+    let courseIdx = document.getElementById('courseSelect').value;
+    let now = Date.now();
+    let dateStr = new Date(document.getElementById('roundDate').value+'T12:00:00').toISOString();
+    let existing = JSON.parse(localStorage.getItem('fieldRounds')||'[]');
+    players.forEach((p,index)=>{
+      if(p.data.every(h=>h.score===null)) return;
+      existing.push({
+        id: now+index,
+        player: p.name,
+        course: courseName,
+        courseIdx,
+        date: dateStr,
+        holes: p.data.map(h=>({...h}))
+      });
+    });
+    localStorage.setItem('fieldRounds', JSON.stringify(existing));
+  }catch(e){}
+}
+
+function toParClass(score, par){
+  let diff = score - par;
+  if(diff <= -2) return 'sc-eagle';
+  if(diff === -1) return 'sc-under';
+  if(diff >= 2)  return 'sc-over';
+  return '';
+}
+
+function goBack(){
+  const hasScores = players.length > 0 && players.some(p => p.data.some(h => h.score !== null));
+  if(hasScores && !confirm('Abandon this round? Scores will be lost.')) return;
+  window.location.href = 'index.html';
+}
+
+function flipCard(id){
+  const inner = document.getElementById(id);
+  inner.classList.toggle('flipped');
+  const btn = document.querySelector('.flip-btn');
+  if(btn) btn.style.display = inner.classList.contains('flipped') ? 'none' : 'flex';
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>

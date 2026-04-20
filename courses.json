@@ -1,0 +1,50 @@
+{
+    "courses": [
+      {
+        "name": "Musqueam",
+        "holes": [
+          {"number":1,"par":4,"distance":235},
+          {"number":2,"par":3,"distance":168},
+          {"number":3,"par":3,"distance":105},
+          {"number":4,"par":4,"distance":225},
+          {"number":5,"par":3,"distance":171},
+          {"number":6,"par":3,"distance":122},
+          {"number":7,"par":4,"distance":233},
+          {"number":8,"par":3,"distance":172},
+          {"number":9,"par":4,"distance":255},
+          {"number":10,"par":3,"distance":153},
+          {"number":11,"par":4,"distance":333},
+          {"number":12,"par":3,"distance":193},
+          {"number":13,"par":3,"distance":199},
+          {"number":14,"par":3,"distance":124},
+          {"number":15,"par":3,"distance":150},
+          {"number":16,"par":4,"distance":276},
+          {"number":17,"par":3,"distance":145},
+          {"number":18,"par":3,"distance":212}
+        ]
+      },
+      {
+        "name": "Kings Links by the Sea (White tees)",
+        "holes": [
+          {"number":1,"par":4,"distance":341},
+          {"number":2,"par":5,"distance":516},
+          {"number":3,"par":4,"distance":343},
+          {"number":4,"par":3,"distance":165},
+          {"number":5,"par":4,"distance":316},
+          {"number":6,"par":3,"distance":132},
+          {"number":7,"par":5,"distance":472},
+          {"number":8,"par":4,"distance":308},
+          {"number":9,"par":4,"distance":343},
+          {"number":10,"par":4,"distance":355},
+          {"number":11,"par":5,"distance":495},
+          {"number":12,"par":4,"distance":330},
+          {"number":13,"par":3,"distance":116},
+          {"number":14,"par":5,"distance":502},
+          {"number":15,"par":3,"distance":127},
+          {"number":16,"par":4,"distance":421},
+          {"number":17,"par":4,"distance":327},
+          {"number":18,"par":4,"distance":379}
+        ]
+      }
+    ]
+  }

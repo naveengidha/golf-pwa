@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f4d2b">
+<title>Grand Prix</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:Arial,Helvetica,sans-serif;background:#1f4d2b;margin:0;padding:0;color:#fff;display:flex;flex-direction:column;min-height:100vh;}
+.topnav{display:flex;align-items:center;background:#1c4729;padding:10px 16px;gap:12px;flex-shrink:0;border-bottom:2px solid #ffd447;box-shadow:0 2px 12px rgba(0,0,0,0.5);}
+.back-btn{background:none;border:none;color:#ffd447;font-size:15px;font-weight:bold;cursor:pointer;padding:4px 8px 4px 0;white-space:nowrap;display:flex;align-items:center;gap:6px;width:auto;}
+.back-btn:hover{color:#ffcc2a;}
+.topnav-title{font-size:15px;font-weight:bold;color:#ffd447;flex:1;text-align:center;letter-spacing:.5px;}
+.topnav-spacer{width:70px;}
+h2{text-align:center;margin-top:0;color:#ffd447;letter-spacing:.5px;}
+h3{text-align:center;margin-top:0;color:rgba(255,255,255,0.75);}
+.scroll-area{flex:1;overflow-y:auto;padding:20px 16px 40px;display:flex;justify-content:center;}
+.container{
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
+    #1a1a2e;
+  border:1px solid rgba(225,6,0,0.4);
+  padding:24px 20px;border-radius:12px;width:100%;max-width:480px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative;
+}
+.setup-player-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.name-input{flex:1;padding:10px;border-radius:6px;border:1px solid rgba(225,6,0,0.3);border-bottom:2px solid rgba(225,6,0,0.5);color:white;font-size:15px;background:rgba(0,0,0,0.3);}
+.name-input.black{border-left:3px solid #aaa!important;}
+.name-input.red{border-left:3px solid #e10600!important;}
+.name-input::placeholder{color:rgba(255,255,255,0.35);}
+.row-setting{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.row-setting label{font-size:12px;white-space:nowrap;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.5px;}
+.select-input{padding:8px 10px;border-radius:6px;border:1px solid rgba(225,6,0,0.3);font-size:15px;background:rgba(0,0,0,0.3);color:white;}
+.course-input{width:100%;margin-bottom:12px;padding:10px;border-radius:6px;border:1px solid rgba(225,6,0,0.3);font-size:15px;background:rgba(0,0,0,0.3);color:white;}
+#nameError{color:#ff6b6b;font-size:13px;display:none;}
+button{width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-weight:bold;background:linear-gradient(135deg,#c9a227,#ffd447,#c9a227);color:#1a1a0a;cursor:pointer;margin-bottom:4px;box-shadow:0 2px 8px rgba(184,150,46,0.4);letter-spacing:.5px;}
+button:hover,button:active{background:linear-gradient(135deg,#b8912e,#ffc93a,#b8912e);}
+button.btn-secondary{background:transparent;border:1px solid rgba(225,6,0,0.4);color:rgba(255,100,80,0.85);font-size:14px;padding:10px;box-shadow:none;letter-spacing:.5px;}
+button.btn-secondary:hover,button.btn-secondary:active{background:rgba(225,6,0,0.08);border-color:rgba(225,6,0,0.6);color:#ff4422;}
+.hidden{display:none!important;}
+.score-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px;}
+.player-box{display:flex;flex-direction:column;align-items:center;}
+.player-box>label{font-size:12px;font-weight:bold;margin-bottom:6px;text-align:center;color:rgba(255,255,255,0.8);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;}
+.player-box input[type=number]{padding:10px 4px;border-radius:6px;border:1px solid rgba(225,6,0,0.25);text-align:center;font-size:22px;font-weight:bold;width:100%;background:rgba(0,0,0,0.35);color:white;font-family:'Courier New',monospace;}
+.results{margin-top:16px;background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;border:1px solid rgba(225,6,0,0.2);}
+.results h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,100,80,0.6);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(225,6,0,0.2);}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:15px;}
+.result-row:last-child{border-bottom:none;}
+.pos-badge{display:inline-block;width:26px;height:26px;line-height:26px;border-radius:3px;text-align:center;font-size:11px;font-weight:bold;margin-right:6px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);letter-spacing:0;}
+.pos-badge.p1{background:#ffd447;color:#111;}
+.pos-badge.p2{background:#b0b0b0;color:#111;}
+.pos-badge.p3{background:#cd7f32;color:#111;}
+.team{margin-top:12px;font-weight:bold;font-size:15px;text-align:center;letter-spacing:.5px;}
+table{width:100%;border-collapse:collapse;margin-top:6px;}
+th,td{border:1px solid rgba(225,6,0,0.15);padding:5px 4px;text-align:center;font-size:12px;}
+thead th{background:rgba(0,0,0,0.4);color:#ffd447;letter-spacing:.5px;text-transform:uppercase;font-size:10px;}
+td{font-family:'Courier New',monospace;}
+.current-hole td{background:rgba(225,6,0,0.08);font-weight:bold;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:1000;}
+.modal-content{background:#1a1a2e;border:1px solid rgba(225,6,0,0.5);width:92%;max-width:620px;max-height:88vh;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+.modal-header{background:#0d0d1a;border-bottom:1px solid rgba(225,6,0,0.3);color:#ffd447;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-weight:bold;font-size:15px;letter-spacing:.5px;}
+.modal-body{overflow-y:auto;padding:10px;}
+.close-btn{background:none;border:none;color:white;font-size:22px;cursor:pointer;width:auto;padding:0 4px;}
+.flip-card{width:100%;}
+.flip-inner{position:relative;transform-style:preserve-3d;transition:transform 0.45s ease;}
+.flip-inner.flipped{transform:rotateY(180deg);}
+.flip-front{position:relative;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.flip-back{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  transform:rotateY(180deg);
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
+    #1a1a2e;
+  border:1px solid rgba(225,6,0,0.4);
+  padding:24px 20px;border-radius:12px;
+}
+.flip-inner.flipped .flip-front{position:absolute;inset:0;}
+.flip-inner.flipped .flip-back{position:relative;inset:auto;}
+.flip-btn{position:absolute;bottom:14px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(255,212,71,0.12);border:1px solid rgba(255,212,71,0.35);color:#ffd447;font-size:13px;font-weight:bold;letter-spacing:0;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;text-transform:none;z-index:10;box-shadow:none;}
+.flip-btn:hover,.flip-btn:active{background:rgba(255,212,71,0.25);}
+.flip-back-btn{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);font-size:13px;font-weight:bold;padding:6px 14px;border-radius:4px;cursor:pointer;width:auto;margin-bottom:20px;letter-spacing:.5px;text-transform:none;box-shadow:none;}
+.flip-back-btn:hover,.flip-back-btn:active{background:rgba(255,255,255,0.07);color:#fff;}
+.rules-title{font-size:18px;font-weight:bold;color:#ffd447;text-align:center;margin:0 0 6px;letter-spacing:1px;}
+.rules-sub{text-align:center;color:rgba(255,255,255,0.5);font-size:12px;margin:0 0 20px;letter-spacing:1px;text-transform:uppercase;}
+.rules-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.rules-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:14px;}
+.rules-table td:first-child{color:rgba(255,255,255,0.5);width:40%;}
+.rules-table td:last-child{font-weight:bold;font-family:'Courier New',monospace;color:#ffd447;}
+.rules-note{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;text-align:center;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<div class="topnav">
+  <button class="back-btn" onclick="goBack()">‹ Menu</button>
+  <div class="topnav-title" id="topnavTitle">Grand Prix</div>
+  <div class="topnav-spacer"></div>
+</div>
+
+<div class="scroll-area">
+<div class="container">
+
+  <!-- SETUP -->
+  <div id="setupScreen">
+    <div class="flip-card">
+      <div class="flip-inner" id="setupFlip">
+
+        <div class="flip-front">
+          <h2>New Game</h2>
+          <div id="playerRows">
+            <div class="setup-player-row">
+              <input class="name-input black" id="name0" placeholder="Player 1 (Black Team)">
+            </div>
+            <div class="setup-player-row">
+              <input class="name-input black" id="name1" placeholder="Player 2 (Black Team)">
+            </div>
+            <div class="setup-player-row">
+              <input class="name-input red" id="name2" placeholder="Player 3 (Red Team)">
+            </div>
+            <div class="setup-player-row">
+              <input class="name-input red" id="name3" placeholder="Player 4 (Red Team)">
+            </div>
+          </div>
+          <div class="row-setting">
+            <label>Holes:</label>
+            <select id="holesSelect" class="select-input">
+              <option value="9">9</option>
+              <option value="18" selected>18</option>
+            </select>
+          </div>
+          <select class="course-input" id="courseSelect"></select>
+          <input type="date" class="course-input" id="roundDate">
+          <button onclick="startGame()">Start Game</button>
+          <div id="nameError">Please enter all 4 player names.</div>
+        </div>
+
+        <div class="flip-back">
+          <button class="flip-back-btn" onclick="flipCard('setupFlip')">‹ Back</button>
+          <div class="rules-title">🏎️ Grand Prix</div>
+          <div class="rules-sub">4 players · 2 teams · Black vs Red</div>
+          <table class="rules-table">
+            <tr><td>1st place</td><td>5 pts</td></tr>
+            <tr><td>2nd place</td><td>3 pts</td></tr>
+            <tr><td>3rd place</td><td>2 pts</td></tr>
+            <tr><td>4th place</td><td>0 pts</td></tr>
+          </table>
+          <div class="rules-note">
+            Ties split the combined points equally.<br>
+            Team score = both players' hole points added together.<br><br>
+            Highest team total at the end wins the round.
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <button class="flip-btn" onclick="flipCard('setupFlip')" title="How to play">i</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="gameScreen" class="hidden">
+    <h2>Hole <span id="holeLabel">1</span></h2>
+    <h3>Par <span id="parLabel">–</span> &nbsp;·&nbsp; <span id="distLabel">–</span> yds</h3>
+
+    <div class="score-row">
+      <div class="player-box">
+        <label id="p1Label"></label>
+        <input class="black" type="number" inputmode="numeric" id="p1" placeholder="–">
+      </div>
+      <div class="player-box">
+        <label id="p2Label"></label>
+        <input class="black" type="number" inputmode="numeric" id="p2" placeholder="–">
+      </div>
+      <div class="player-box">
+        <label id="p3Label"></label>
+        <input class="red" type="number" inputmode="numeric" id="p3" placeholder="–">
+      </div>
+      <div class="player-box">
+        <label id="p4Label"></label>
+        <input class="red" type="number" inputmode="numeric" id="p4" placeholder="–">
+      </div>
+    </div>
+
+    <button onclick="calculateHole()">✓ Next Hole</button>
+    <div id="holeError" style="color:#ff6b6b;font-size:13px;margin:6px 0 0;display:none;"></div>
+    <br>
+    <div class="results">
+      <h3 style="margin-top:0;">Standings</h3>
+      <div id="standingsList"></div>
+      <div class="team" id="teamTotals"></div>
+    </div>
+    <br>
+    <button class="btn-secondary" onclick="openScorecard()">📋 View Scorecard</button>
+
+    <!-- Scorecard modal -->
+    <div id="scorecardModal" class="hidden modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>Scorecard</span>
+          <button class="close-btn" onclick="closeScorecard()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="overflow-x:auto;">
+            <table id="previewTable">
+              <thead>
+                <tr>
+                  <th>Hole</th><th>Par</th><th>Yds</th>
+                  <th id="phP1"></th><th id="phP2"></th>
+                  <th id="phP3"></th><th id="phP4"></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div id="finalScreen" class="hidden">
+    <h2>Final Results</h2>
+    <h3 id="finalTeamTotals" style="margin-bottom:16px;"></h3>
+    <div id="finalStandings" style="margin-bottom:16px;background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;border:1px solid rgba(225,6,0,0.2);"></div>
+    <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,100,80,0.6);margin-bottom:8px;">Scorecard</div>
+    <div style="overflow-x:auto;">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Hole</th><th>Par</th><th>Yds</th>
+            <th id="hP1"></th><th id="hP2"></th>
+            <th id="hP3"></th><th id="hP4"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <br>
+    <button onclick="newGame()">New Game</button>
+  </div>
+
+</div><!-- /container -->
+</div><!-- /scroll-area -->
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+let hole = 1;
+let totalHoles = 18;
+let playerNames = [];
+let playerTotals = [0,0,0,0];
+let teamTotalsRunning = [0,0];
+let scoreHistory = [];
+let pointHistory = [];
+let courses = [];
+let selectedCourse = null;
+
+document.getElementById('roundDate').value = new Date().toLocaleDateString('en-CA');
+document.getElementById('scorecardModal').addEventListener('click', function(e){
+  if(e.target === this) closeScorecard();
+});
+fetch('courses.json')
+  .then(r => { if(!r.ok) throw new Error('unavailable'); return r.json(); })
+  .then(data => {
+    courses = data.courses;
+    let sel = document.getElementById('courseSelect');
+    courses.forEach((c,i) => {
+      let o = document.createElement('option');
+      o.value = i; o.textContent = c.name;
+      sel.appendChild(o);
+    });
+  })
+  .catch(() => {
+    let sel = document.getElementById('courseSelect');
+    let o = document.createElement('option');
+    o.textContent = 'Course data unavailable'; o.value = '';
+    sel.appendChild(o);
+  });
+
+document.querySelectorAll('.name-input').forEach(input => {
+  input.addEventListener('input', () => {
+    input.style.border = 'none';
+    document.getElementById('nameError').style.display = 'none';
+  });
+});
+
+
+function goBack(){
+  if(scoreHistory.length > 0 && !confirm('Abandon this round? Scores will be lost.')) return;
+  window.location.href = 'index.html';
+}
+
+function startGame(){
+  let n = ['name0','name1','name2','name3'].map(id => document.getElementById(id).value.trim());
+  let errEl = document.getElementById('nameError');
+  document.querySelectorAll('.name-input').forEach(i => i.style.border = 'none');
+  errEl.style.display = 'none';
+
+  let hasError = false;
+  n.forEach((name, i) => {
+    if(!name){
+      document.getElementById('name'+i).style.border = '2px solid #ff6b6b';
+      hasError = true;
+    }
+  });
+  if(hasError){ errEl.style.display = 'block'; return; }
+
+  let idx = document.getElementById('courseSelect').value;
+  if(idx !== '' && courses.length > 0) selectedCourse = courses[idx];
+  totalHoles = Number(document.getElementById('holesSelect').value)||18;
+
+  playerNames = n;
+  ['p1Label','p2Label','p3Label','p4Label'].forEach((id,i) => {
+    document.getElementById(id).textContent = playerNames[i];
+  });
+  ['hP1','hP2','hP3','hP4','phP1','phP2','phP3','phP4'].forEach((id,i) => {
+    document.getElementById(id).textContent = playerNames[i % 4];
+  });
+
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  updateHoleInfo();
+  renderStandings();
+  document.getElementById('teamTotals').textContent =
+    'Black: 0.0 \u00a0·\u00a0 Red: 0.0';
+}
+
+function updateHoleInfo(){
+  document.getElementById('holeLabel').textContent = hole;
+  document.getElementById('topnavTitle').textContent = `Grand Prix — Hole ${hole}/${totalHoles}`;
+  if(!selectedCourse){
+    document.getElementById('parLabel').textContent = '–';
+    document.getElementById('distLabel').textContent = '–';
+    return;
+  }
+  let h = selectedCourse.holes[hole-1];
+  document.getElementById('parLabel').textContent = h.par;
+  document.getElementById('distLabel').textContent = h.distance;
+}
+
+function calculateTeamPoints(scores, teams){
+  const pos = [5,3,2,0];
+  let players = scores.map((s,i) => ({player:i, score:s}));
+  players.sort((a,b) => a.score - b.score);
+  let points = new Array(4).fill(0);
+  let i = 0;
+  while(i < players.length){
+    let tie = [players[i]]; let j = i+1;
+    while(j < players.length && players[j].score === players[i].score){ tie.push(players[j]); j++; }
+    let total = 0;
+    for(let k=i;k<j;k++) total += pos[k];
+    let avg = total / tie.length;
+    tie.forEach(p => { points[p.player] = avg; });
+    i = j;
+  }
+  let teamTotals = [0,0];
+  points.forEach((p,idx) => { teamTotals[teams[idx]] += p; });
+  return { playerPoints: points, teamTotals };
+}
+
+function calculateHole(){
+  let scores = [1,2,3,4].map(n => Number(document.getElementById('p'+n).value));
+  if(scores.some(s => !s)){
+    document.getElementById('holeError').textContent='Please enter all 4 scores before continuing.';
+    document.getElementById('holeError').style.display='block';
+    return;
+  }
+  document.getElementById('holeError').style.display='none';
+  const teams = [0,0,1,1];
+  const result = calculateTeamPoints(scores, teams);
+  scoreHistory.push(scores);
+  pointHistory.push(result.playerPoints);
+  for(let i=0;i<4;i++) playerTotals[i] += result.playerPoints[i];
+  teamTotalsRunning[0] += result.teamTotals[0];
+  teamTotalsRunning[1] += result.teamTotals[1];
+
+  renderStandings();
+    document.getElementById('teamTotals').textContent =
+    'Black: '+teamTotalsRunning[0].toFixed(1)+' \u00a0·\u00a0 Red: '+teamTotalsRunning[1].toFixed(1);
+
+  if(hole === totalHoles){ endGame(); return; }
+
+  hole++;
+  updateHoleInfo();
+  [1,2,3,4].forEach(n => { document.getElementById('p'+n).value = ''; });
+  document.getElementById('p1').focus();
+}
+
+function renderStandings(){
+  let sorted = playerNames.map((name,i) => ({name, points:playerTotals[i]}))
+    .sort((a,b) => b.points - a.points);
+  let posCls = ['p1','p2','p3',''];
+  document.getElementById('standingsList').innerHTML = sorted.map((p,i) =>
+    `<div class="result-row">
+      <span><span class="pos-badge ${posCls[i]||''}">P${i+1}</span>${p.name}</span>
+      <span>${p.points.toFixed(1)} pts</span>
+    </div>`
+  ).join('');
+}
+
+function openScorecard(){
+  renderPreviewTable();
+  document.getElementById('scorecardModal').classList.remove('hidden');
+}
+function closeScorecard(){
+  document.getElementById('scorecardModal').classList.add('hidden');
+}
+
+function renderPreviewTable(){
+  let tbody = document.querySelector('#previewTable tbody');
+  tbody.innerHTML = '';
+  for(let i=0;i<scoreHistory.length;i++){
+    let par='-', yards='-';
+    if(selectedCourse && selectedCourse.holes[i]){
+      par = selectedCourse.holes[i].par;
+      yards = selectedCourse.holes[i].distance;
+    }
+    let isCurrent = (i === scoreHistory.length-1);
+    let row = `<tr class="${isCurrent?'current-hole':''}">
+      <td>${i+1}</td><td>${par}</td><td>${yards}</td>`;
+    for(let p=0;p<4;p++){
+      row += `<td>${scoreHistory[i][p]}<br><small>(${pointHistory[i][p].toFixed(1)})</small></td>`;
+    }
+    row += '</tr>';
+    tbody.innerHTML += row;
+  }
+}
+
+function saveGameResult(){
+  try{
+    let history = JSON.parse(localStorage.getItem('gameHistory')||'[]');
+    history.push({
+      id: Date.now(),
+      game: 'f1',
+      date: new Date(document.getElementById('roundDate').value+'T12:00:00').toISOString(),
+      course: selectedCourse ? selectedCourse.name : 'Unknown Course',
+      players: [...playerNames],
+      teamBlackPlayers: [playerNames[0], playerNames[1]],
+      teamRedPlayers: [playerNames[2], playerNames[3]],
+      playerTotals: [...playerTotals],
+      teamTotals: [...teamTotalsRunning],
+      scoreHistory: scoreHistory.map(h=>[...h]),
+      pointHistory: pointHistory.map(h=>[...h])
+    });
+    localStorage.setItem('gameHistory', JSON.stringify(history));
+  }catch(e){}
+}
+
+function endGame(){
+  saveGameResult();
+  document.getElementById('gameScreen').classList.add('hidden');
+  document.getElementById('finalScreen').classList.remove('hidden');
+  document.getElementById('topnavTitle').textContent = 'Grand Prix';
+  let tbody = document.querySelector('#resultsTable tbody');
+  for(let i=0;i<totalHoles;i++){
+    let par='-', yards='-';
+    if(selectedCourse && selectedCourse.holes[i]){ par=selectedCourse.holes[i].par; yards=selectedCourse.holes[i].distance; }
+    let row = `<tr><td>${i+1}</td><td>${par}</td><td>${yards}</td>`;
+    for(let p=0;p<4;p++){
+      let s = scoreHistory[i] ? scoreHistory[i][p] : '-';
+      let pts = pointHistory[i] ? pointHistory[i][p].toFixed(1) : '-';
+      row += `<td>${s} (${pts})</td>`;
+    }
+    row += '</tr>';
+    tbody.innerHTML += row;
+  }
+  const medals = ['🏆','🥈','🥉',''];
+  const posCls = ['p1','p2','p3',''];
+  let sorted = playerNames.map((name,i) => ({name, points:playerTotals[i]}))
+    .sort((a,b) => b.points - a.points);
+  document.getElementById('finalStandings').innerHTML =
+    '<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,100,80,0.6);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(225,6,0,0.2);">Player Standings</div>' +
+    sorted.map((p,i) => {
+      const rank = sorted.filter(o => o.points > p.points).length;
+      return `<div class="result-row">
+        <span style="display:flex;align-items:center;gap:6px;"><span class="pos-badge ${posCls[rank]||''}">${medals[rank]||''}P${rank+1}</span>${esc(p.name)}</span>
+        <span>${p.points.toFixed(1)} pts</span>
+      </div>`;
+    }).join('');
+  document.getElementById('finalTeamTotals').textContent =
+    'Black: '+teamTotalsRunning[0].toFixed(1)+' \u00a0·\u00a0 Red: '+teamTotalsRunning[1].toFixed(1);
+}
+
+function newGame(){
+  window.location.reload();
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function flipCard(id){
+  const inner = document.getElementById(id);
+  inner.classList.toggle('flipped');
+  const btn = document.querySelector('.flip-btn');
+  if(btn) btn.style.display = inner.classList.contains('flipped') ? 'none' : 'flex';
+}
+</script>
+</body>
+</html>

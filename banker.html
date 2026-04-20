@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f4d2b">
+<title>The Banker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:Arial,Helvetica,sans-serif;background:#1f4d2b;margin:0;padding:0;color:#fff;display:flex;flex-direction:column;min-height:100vh;}
+.topnav{display:flex;align-items:center;background:#1c4729;padding:10px 16px;gap:12px;flex-shrink:0;border-bottom:2px solid #ffd447;box-shadow:0 2px 12px rgba(0,0,0,0.5);}
+.back-btn{background:none;border:none;color:#ffd447;font-size:15px;font-weight:bold;cursor:pointer;padding:4px 8px 4px 0;white-space:nowrap;display:flex;align-items:center;gap:6px;width:auto;}
+.back-btn:hover{color:#ffcc2a;}
+.topnav-title{font-size:15px;font-weight:bold;color:#ffd447;flex:1;text-align:center;letter-spacing:.5px;}
+.topnav-spacer{width:70px;}
+h2{text-align:center;margin-top:0;color:#ffd447;letter-spacing:.5px;}
+h3{text-align:center;margin-top:0;color:rgba(255,255,255,0.75);}
+.scroll-area{flex:1;overflow-y:auto;padding:20px 16px 40px;display:flex;justify-content:center;}
+.container{
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
+    #14281c;
+  border:1px solid #b8962e;
+  padding:24px 20px;border-radius:12px;width:100%;max-width:480px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative;
+}
+.setup-player-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.name-input{flex:1;padding:10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);border-bottom:2px solid rgba(184,150,46,0.5);color:white;font-size:15px;background:rgba(0,0,0,0.3);}
+.name-input::placeholder{color:rgba(255,255,255,0.35);}
+.row-setting{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.row-setting label{font-size:12px;white-space:nowrap;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.5px;}
+.select-input{padding:8px 10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);font-size:15px;background:rgba(0,0,0,0.3);color:white;}
+.course-input{width:100%;margin-bottom:12px;padding:10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);font-size:15px;background:rgba(0,0,0,0.3);color:white;}
+#nameError{color:#ff6b6b;font-size:13px;display:none;}
+button{width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-weight:bold;background:linear-gradient(135deg,#c9a227,#ffd447,#c9a227);color:#1a1a0a;cursor:pointer;margin-bottom:4px;box-shadow:0 2px 8px rgba(184,150,46,0.4);letter-spacing:.5px;}
+button:hover,button:active{background:linear-gradient(135deg,#b8912e,#ffc93a,#b8912e);}
+button.btn-secondary{background:transparent;border:1px solid rgba(184,150,46,0.4);color:rgba(255,212,71,0.75);font-size:14px;padding:10px;box-shadow:none;letter-spacing:.5px;}
+button.btn-secondary:hover,button.btn-secondary:active{background:rgba(184,150,46,0.08);border-color:rgba(255,212,71,0.6);color:#ffd447;}
+.hidden{display:none!important;}
+.score-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-bottom:20px;}
+.player-box{display:flex;flex-direction:column;align-items:center;}
+.player-box>label{font-size:12px;font-weight:bold;margin-bottom:6px;text-align:center;color:rgba(255,255,255,0.8);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;}
+.player-box>label.is-banker{color:#ffd447;}
+.player-box input[type=number]{padding:10px 4px;border-radius:6px;border:1px solid rgba(184,150,46,0.25);text-align:center;font-size:22px;font-weight:bold;width:80px;background:rgba(0,0,0,0.35);color:white;font-family:'Courier New',monospace;}
+.double-label{display:flex;align-items:center;gap:5px;font-size:12px;margin-top:6px;cursor:pointer;}
+.double-label input[type=checkbox]{transform:scale(1.3);}
+.player-wager{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:#1a1a0a;background:linear-gradient(135deg,#c9a227,#ffd447,#c9a227);border-radius:20px;padding:3px 10px;margin-top:5px;margin-bottom:3px;box-shadow:0 0 0 2px rgba(255,255,255,0.15), 0 2px 6px rgba(0,0,0,0.4);min-width:60px;text-align:center;}
+.results{margin-top:16px;background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;border:1px solid rgba(184,150,46,0.2);}
+.results h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,212,71,0.6);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(184,150,46,0.2);}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:15px;}
+.result-row:last-child{border-bottom:none;}
+.net-pos{color:#5ee87b;font-weight:bold;}
+.net-neg{color:#ff7b7b;font-weight:bold;}
+.net-zero{color:rgba(255,255,255,0.4);}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{border:1px solid rgba(184,150,46,0.2);padding:5px 4px;text-align:center;font-size:12px;}
+thead th{background:rgba(0,0,0,0.4);color:#ffd447;letter-spacing:.5px;text-transform:uppercase;font-size:10px;}
+td{font-family:'Courier New',monospace;}
+.banker-cell{background:rgba(255,212,71,0.12);color:#ffd447;font-weight:bold;}
+.sc-result-col{font-size:11px;text-align:left;padding:4px 6px;}
+.net-table td.pos{color:#5ee87b;font-weight:bold;}
+.net-table td.neg{color:#ff7b7b;font-weight:bold;}
+.net-table td.zero{color:rgba(255,255,255,0.4);}
+.settlement-box{background:rgba(0,0,0,0.35);border-radius:8px;padding:14px;margin-bottom:16px;border:1px solid rgba(184,150,46,0.3);border-top:3px solid #ffd447;}
+.settlement-box h3{margin:0 0 10px;font-size:13px;color:#ffd447;text-align:center;letter-spacing:1.5px;text-transform:uppercase;}
+.settle-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(184,150,46,0.15);margin-bottom:6px;font-size:14px;}
+.settle-row:last-child{margin-bottom:0;}
+.settle-from{color:#ff7b7b;font-weight:bold;flex-shrink:0;}
+.settle-arrow{color:rgba(255,255,255,0.3);flex-shrink:0;}
+.settle-to{color:#5ee87b;font-weight:bold;flex-shrink:0;}
+.settle-amount{margin-left:auto;font-weight:bold;color:#ffd447;font-size:15px;flex-shrink:0;}
+.settle-all-square{text-align:center;color:rgba(255,255,255,0.4);font-size:14px;padding:8px 0;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:1000;}
+.modal-content{background:#14281c;border:1px solid #b8962e;width:92%;max-width:620px;max-height:88vh;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+.modal-header{background:#0a1a10;border-bottom:1px solid rgba(184,150,46,0.3);display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-weight:bold;font-size:15px;letter-spacing:.5px;}
+.modal-body{overflow-y:auto;padding:10px;}
+.close-btn{background:none;border:none;color:white;font-size:22px;cursor:pointer;width:auto;padding:0 4px;}
+.sc-banker-cell{color:#ffd447;font-weight:bold;}
+.sc-pos{color:#5ee87b;font-weight:bold;}
+.sc-neg{color:#ff7b7b;font-weight:bold;}
+.flip-card{width:100%;}
+.flip-inner{position:relative;transform-style:preserve-3d;transition:transform 0.45s ease;}
+.flip-inner.flipped{transform:rotateY(180deg);}
+.flip-front{position:relative;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.flip-back{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  transform:rotateY(180deg);
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
+    #14281c;
+  border:1px solid #b8962e;
+  padding:24px 20px;border-radius:12px;
+}
+.flip-inner.flipped .flip-front{position:absolute;inset:0;}
+.flip-inner.flipped .flip-back{position:relative;inset:auto;}
+.flip-btn{position:absolute;bottom:14px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(255,212,71,0.12);border:1px solid rgba(255,212,71,0.35);color:#ffd447;font-size:13px;font-weight:bold;letter-spacing:0;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;text-transform:none;z-index:10;box-shadow:none;}
+.flip-btn:hover,.flip-btn:active{background:rgba(255,212,71,0.25);}
+.flip-back-btn{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);font-size:13px;font-weight:bold;padding:6px 14px;border-radius:4px;cursor:pointer;width:auto;margin-bottom:20px;letter-spacing:.5px;text-transform:none;box-shadow:none;}
+.flip-back-btn:hover,.flip-back-btn:active{background:rgba(255,255,255,0.07);color:#fff;}
+.rules-title{font-size:18px;font-weight:bold;color:#ffd447;text-align:center;margin:0 0 6px;letter-spacing:1px;}
+.rules-sub{text-align:center;color:rgba(255,255,255,0.5);font-size:12px;margin:0 0 20px;letter-spacing:1px;text-transform:uppercase;}
+.rules-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.rules-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:14px;}
+.rules-table td:first-child{color:rgba(255,255,255,0.5);width:55%;}
+.rules-table td:last-child{font-weight:bold;font-family:'Courier New',monospace;color:#ffd447;}
+.rules-note{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;text-align:center;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <button class="back-btn" onclick="goBack()">‹ Menu</button>
+  <div class="topnav-title" id="topnavTitle">The Banker</div>
+  <div class="topnav-spacer"></div>
+</div>
+
+<div class="scroll-area">
+<div class="container">
+
+  <!-- SETUP -->
+  <div id="setupScreen">
+    <div class="flip-card">
+      <div class="flip-inner" id="setupFlip">
+
+        <div class="flip-front">
+          <h2>New Game</h2>
+          <div id="playerRows">
+            <div class="setup-player-row">
+              <input class="name-input" id="name0" placeholder="Player 1">
+            </div>
+            <div class="setup-player-row">
+              <input class="name-input" id="name1" placeholder="Player 2">
+            </div>
+            <div class="setup-player-row">
+              <input class="name-input" id="name2" placeholder="Player 3 (optional)">
+            </div>
+            <div class="setup-player-row">
+              <input class="name-input" id="name3" placeholder="Player 4 (optional)">
+            </div>
+          </div>
+          <div class="row-setting">
+            <label>Starting Banker:</label>
+            <select id="startBankerSelect" class="select-input">
+              <option value="0">Player 1</option>
+              <option value="1">Player 2</option>
+              <option value="2">Player 3</option>
+              <option value="3">Player 4</option>
+            </select>
+          </div>
+          <div class="row-setting">
+            <label>Base Hole Value ($):</label>
+            <input type="number" id="holeBaseValue" value="5" min="1" inputmode="numeric" class="select-input">
+          </div>
+          <div class="row-setting">
+            <label>Holes:</label>
+            <select id="holesSelect" class="select-input">
+              <option value="9">9</option>
+              <option value="18" selected>18</option>
+            </select>
+          </div>
+          <select class="course-input" id="courseSelect"></select>
+          <input type="date" class="course-input" id="roundDate">
+          <button onclick="startGame()">Start Game</button>
+          <div id="nameError">Enter at least 2 player names.</div>
+        </div>
+
+        <div class="flip-back">
+          <button class="flip-back-btn" onclick="flipCard('setupFlip')">‹ Back</button>
+          <div class="rules-title">🏦 The Banker</div>
+          <div class="rules-sub">2–4 players · one banker per hole</div>
+          <table class="rules-table">
+            <tr><td>Banker</td><td>One player per hole faces all others</td></tr>
+            <tr><td>Base value</td><td>Set before the round starts</td></tr>
+            <tr><td>Double</td><td>Either player can double before scoring</td></tr>
+            <tr><td>Win</td><td>Lower score takes the hole value</td></tr>
+            <tr><td>Tie</td><td>Value carries over to the next hole</td></tr>
+            <tr><td>New banker</td><td>Player who beats the banker with the lowest score</td></tr>
+          </table>
+          <div class="rules-note">
+            Each matchup is banker vs. one player — settled hole by hole.<br>
+            Highest net total wins the round.
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <button class="flip-btn" onclick="flipCard('setupFlip')" title="How to play">i</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="gameScreen" class="hidden">
+    <h2>Hole <span id="holeLabel">1</span></h2>
+    <h3>Par <span id="parLabel">–</span> &nbsp;·&nbsp; <span id="distLabel">–</span> yds</h3>
+
+    <div id="scoreRow" class="score-row"></div>
+
+    <button onclick="resolveHole()">✓ Resolve Hole</button>
+    <div id="holeError" style="color:#ff6b6b;font-size:13px;margin:6px 0 0;display:none;"></div>
+    <br>
+    <div class="results">
+      <h3 style="margin-top:0;">Standings</h3>
+      <div id="standingsList"></div>
+    </div>
+    <br>
+    <button class="btn-secondary" onclick="toggleBankerScorecard()">📋 View Scorecard</button>
+
+    <!-- Scorecard modal -->
+    <div id="bankerScorecardModal" class="hidden modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>Scorecard</span>
+          <button class="close-btn" onclick="toggleBankerScorecard()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="overflow-x:auto;">
+            <table id="bankerScorecardTable">
+              <thead><tr id="bankerScorecardHead"></tr></thead>
+              <tbody id="bankerScorecardBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div id="finalScreen" class="hidden">
+    <h2>Final Results</h2>
+    <div style="overflow-x:auto;">
+      <table id="resultsTable">
+        <thead>
+          <tr id="resultsHeader"></tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+    <br>
+    <h3>Net Positions</h3>
+    <table class="net-table">
+      <thead><tr id="netHeader"></tr></thead>
+      <tbody><tr id="netBody"></tr></tbody>
+    </table>
+    <br>
+    <div id="settlementSection"></div>
+    <button onclick="window.location.href='index.html'">End Game</button>
+  </div>
+
+</div>
+</div>
+
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('roundDate').value = new Date().toLocaleDateString('en-CA');
+  document.getElementById('bankerScorecardModal').addEventListener('click', function(e){
+    if(e.target === this) this.classList.add('hidden');
+  });
+
+  [0,1,2,3].forEach(i=>{
+    document.getElementById('name'+i).addEventListener('input', updateBankerDropdown);
+  });
+  updateBankerDropdown();
+});
+
+function updateBankerDropdown(){
+  const sel = document.getElementById('startBankerSelect');
+  const cur = sel.value;
+  sel.innerHTML = '';
+  [0,1,2,3].forEach(i=>{
+    const val = document.getElementById('name'+i).value.trim();
+    if(val){
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = val;
+      sel.appendChild(o);
+    }
+  });
+  if(sel.querySelector(`option[value="${cur}"]`)) sel.value = cur;
+}
+
+let hole = 1;
+let totalHoles = 18;
+let playerNames = [];
+let bankerIdx = 0;
+let baseValue = 5;
+let carryovers = []; // per-player carryover vs the banker
+let playerNetTotals = [];
+let courses = [], selectedCourse = null;
+let holeHistory = [];
+
+fetch('courses.json')
+  .then(r=>r.json())
+  .then(data=>{
+    courses = data.courses||[];
+    let sel = document.getElementById('courseSelect');
+    courses.forEach((c,i)=>{
+      let o = document.createElement('option'); o.value=i; o.textContent=c.name; sel.appendChild(o);
+    });
+  }).catch(()=>{
+    let sel = document.getElementById('courseSelect');
+    let o = document.createElement('option'); o.textContent='Course data unavailable'; o.value=''; sel.appendChild(o);
+  });
+
+function goBack(){
+  if(holeHistory.length > 0 && !confirm('Abandon this round? Scores will be lost.')) return;
+  window.location.href='index.html';
+}
+
+function startGame(){
+  let raw = [0,1,2,3].map(n=>document.getElementById('name'+n).value.trim());
+  playerNames = raw.filter(n=>n!=='');
+  if(playerNames.length < 2){ document.getElementById('nameError').style.display='block'; return; }
+  document.getElementById('nameError').style.display='none';
+
+  // Map selected dropdown value to index within playerNames array
+  let selectVal = Number(document.getElementById('startBankerSelect').value);
+  let filledIndices = raw.map((n,i)=>n!==''?i:-1).filter(i=>i>=0);
+  let mappedBanker = filledIndices.indexOf(selectVal);
+  bankerIdx = mappedBanker >= 0 ? mappedBanker : 0;
+
+  playerNetTotals = new Array(playerNames.length).fill(0);
+  carryovers = new Array(playerNames.length).fill(0);
+  baseValue = Number(document.getElementById('holeBaseValue').value)||5;
+  totalHoles = Number(document.getElementById('holesSelect').value)||18;
+  carryover = 0;
+
+  let idx = document.getElementById('courseSelect').value;
+  if(idx !== '') selectedCourse = courses[idx];
+
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  renderHoleInfo();
+  renderInputs();
+  updateDisplays();
+  renderStandings();
+}
+
+function renderHoleInfo(){
+  document.getElementById('holeLabel').textContent = hole;
+  document.getElementById('topnavTitle').textContent = `The Banker — Hole ${hole}/${totalHoles}`;
+  if(selectedCourse && selectedCourse.holes && selectedCourse.holes[hole-1]){
+    let h = selectedCourse.holes[hole-1];
+    document.getElementById('parLabel').textContent = h.par;
+    document.getElementById('distLabel').textContent = h.distance;
+  } else {
+    document.getElementById('parLabel').textContent = '–';
+    document.getElementById('distLabel').textContent = '–';
+  }
+}
+
+function renderInputs(){
+  document.getElementById('scoreRow').innerHTML = playerNames.map((p,i)=>{
+    let isBanker = i === bankerIdx;
+    let doubleLabel = isBanker ? 'Double All' : 'Double';
+    let wagerHtml = isBanker
+      ? `<div class="player-wager" style="color:rgba(255,255,255,0.4)">Banker</div>`
+      : `<div class="player-wager">Wager $<span id="wager${i}">${baseValue}</span></div>`;
+    return `<div class="player-box">
+      <label class="${isBanker?'is-banker':''}">${isBanker?'🏦 ':''}${esc(p)}</label>
+      <input type="number" inputmode="numeric" id="p${i}" placeholder="–">
+      ${wagerHtml}
+      <label class="double-label">
+        <input type="checkbox" id="d${i}" onchange="updateDisplays()">
+        ${doubleLabel}
+      </label>
+    </div>`;
+  }).join('');
+}
+
+function matchupValue(playerIdx){
+  let bankerDoubled = document.getElementById('d'+bankerIdx)?.checked || false;
+  let playerDoubled = document.getElementById('d'+playerIdx)?.checked || false;
+  let doublesCount = (bankerDoubled ? 1 : 0) + (playerDoubled ? 1 : 0);
+  return baseValue * Math.pow(2, doublesCount) + (carryovers[playerIdx] || 0);
+}
+
+function updateDisplays(){
+  for(let i=0; i<playerNames.length; i++){
+    if(i === bankerIdx) continue;
+    let el = document.getElementById('wager'+i);
+    if(el) el.textContent = matchupValue(i);
+  }
+}
+
+function resolveHole(){
+  document.getElementById('holeError').style.display='none';
+  let scores = [], doubles = [];
+  for(let i=0; i<playerNames.length; i++){
+    let v = Number(document.getElementById('p'+i).value);
+    if(!v){ document.getElementById('holeError').textContent='Please enter all scores.'; document.getElementById('holeError').style.display='block'; return; }
+    scores.push(v);
+    doubles.push(document.getElementById('d'+i).checked);
+  }
+
+  let bankerScore = scores[bankerIdx];
+  let bankerDoubled = doubles[bankerIdx];
+  let matchups = [];
+
+  for(let i=0; i<playerNames.length; i++){
+    if(i === bankerIdx) continue;
+    let doublesCount = (bankerDoubled ? 1 : 0) + (doubles[i] ? 1 : 0);
+    let holeValue = baseValue * Math.pow(2, doublesCount) + carryovers[i];
+    let result, amount = 0;
+    if(scores[i] > bankerScore){
+      result = 'banker'; amount = holeValue;
+      playerNetTotals[bankerIdx] += holeValue;
+      playerNetTotals[i] -= holeValue;
+      carryovers[i] = 0;
+    } else if(scores[i] < bankerScore){
+      result = 'player'; amount = holeValue;
+      playerNetTotals[i] += holeValue;
+      playerNetTotals[bankerIdx] -= holeValue;
+      carryovers[i] = 0;
+    } else {
+      result = 'tie'; amount = 0;
+      // carry over this matchup's value (without the existing carryover to avoid double-counting)
+      carryovers[i] += baseValue * Math.pow(2, doublesCount);
+    }
+    matchups.push({playerIdx:i, holeValue, result, amount});
+  }
+
+  let allTied = matchups.every(m => m.result === 'tie');
+
+  // Determine next banker
+  let nextBankerIdx = bankerIdx;
+  if(!allTied){
+    let beaters = matchups
+      .filter(m => m.result === 'player')
+      .map(m => ({idx: m.playerIdx, score: scores[m.playerIdx]}))
+      .sort((a,b) => a.score - b.score);
+    if(beaters.length > 0){
+      let lowestScore = beaters[0].score;
+      let topBeaters = beaters.filter(b => b.score === lowestScore);
+      if(topBeaters.length === 1){
+        nextBankerIdx = topBeaters[0].idx;
+      }
+    }
+  }
+
+  // When banker changes, reset all carryovers (new banker, fresh slate)
+  if(nextBankerIdx !== bankerIdx){
+    carryovers = new Array(playerNames.length).fill(0);
+  }
+
+  holeHistory.push({
+    holeNum: hole,
+    bankerIdx,
+    scores: [...scores],
+    doubles: [...doubles],
+    carryoversBefore: [...carryovers],
+    matchups,
+    allTied,
+    nextBankerIdx
+  });
+
+  bankerIdx = nextBankerIdx;
+  renderStandings();
+
+  hole++;
+  if(hole > totalHoles){ endGame(); return; }
+
+  renderHoleInfo();
+  renderInputs();
+  updateDisplays();
+  for(let i=0; i<playerNames.length; i++){
+    let el = document.getElementById('p'+i);
+    if(el) el.value = '';
+  }
+}
+
+function renderStandings(){
+  let rows = playerNames.map((n,i)=>({n, t:playerNetTotals[i]}))
+    .sort((a,b)=>b.t-a.t);
+  document.getElementById('standingsList').innerHTML = rows.map((p,i)=>{
+    let cls = p.t > 0 ? 'net-pos' : p.t < 0 ? 'net-neg' : 'net-zero';
+    let sign = p.t > 0 ? '+' : '';
+    return `<div class="result-row">
+      <span>${i+1}.&nbsp;${esc(p.n)}</span>
+      <span class="${cls}">${sign}$${p.t}</span>
+    </div>`;
+  }).join('');
+}
+
+function saveGameResult(){
+  try{
+    let history = JSON.parse(localStorage.getItem('gameHistory')||'[]');
+    history.push({
+      id: Date.now(),
+      game: 'banker',
+      date: new Date(document.getElementById('roundDate').value+'T12:00:00').toISOString(),
+      course: selectedCourse ? selectedCourse.name : 'Unknown Course',
+      players: [...playerNames],
+      baseValue,
+      playerNetTotals: [...playerNetTotals],
+      holeHistory: holeHistory.map(h=>({...h, scores:[...h.scores], doubles:[...h.doubles], carryoversBefore:[...h.carryoversBefore], matchups:h.matchups.map(m=>({...m}))}))
+    });
+    localStorage.setItem('gameHistory', JSON.stringify(history));
+  }catch(e){}
+}
+
+function endGame(){
+  saveGameResult();
+  document.getElementById('gameScreen').classList.add('hidden');
+  document.getElementById('finalScreen').classList.remove('hidden');
+  document.getElementById('topnavTitle').textContent = 'The Banker';
+
+  // Build scorecard header: Hole | Par | Yds | [players...] | Result
+  let hdr = document.getElementById('resultsHeader');
+  hdr.innerHTML = '<th>Hole</th><th>Par</th><th>Yds</th>'
+    + playerNames.map(n=>`<th>${esc(n)}</th>`).join('')
+    + '<th>Result</th>';
+
+  let tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  holeHistory.forEach(h=>{
+    let par='-', dist='-';
+    if(selectedCourse && selectedCourse.holes[h.holeNum-1]){
+      par = selectedCourse.holes[h.holeNum-1].par;
+      dist = selectedCourse.holes[h.holeNum-1].distance;
+    }
+    let row = `<tr><td>${h.holeNum}</td><td>${par}</td><td>${dist}</td>`;
+    for(let p=0; p<playerNames.length; p++){
+      let isBanker = p === h.bankerIdx;
+      row += `<td class="${isBanker?'banker-cell':''}">${h.scores[p]}</td>`;
+    }
+    // result summary
+    let resultParts = [];
+    if(h.allTied){
+      resultParts.push('Carryover');
+    } else {
+      h.matchups.forEach(m=>{
+        if(m.result==='banker') resultParts.push(`${esc(playerNames[m.playerIdx])} -$${m.amount}`);
+        else if(m.result==='player') resultParts.push(`${esc(playerNames[m.playerIdx])} +$${m.amount}`);
+      });
+    }
+    row += `<td class="sc-result-col">${resultParts.join('<br>')}</td></tr>`;
+    tbody.innerHTML += row;
+  });
+
+  // Net totals
+  let netHdr = document.getElementById('netHeader');
+  let netBdy = document.getElementById('netBody');
+  netHdr.innerHTML = ''; netBdy.innerHTML = '';
+  playerNames.forEach((p,i)=>{
+    let th = document.createElement('th'); th.textContent = p; netHdr.appendChild(th);
+    let td = document.createElement('td');
+    let v = playerNetTotals[i];
+    let sign = v > 0 ? '+' : '';
+    td.textContent = sign+'$'+v;
+    td.className = v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
+    netBdy.appendChild(td);
+  });
+
+  renderSettlement();
+}
+
+function renderSettlement(){
+  let creditors = [], debtors = [];
+  playerNetTotals.forEach((v,i)=>{
+    if(v > 0.001) creditors.push({idx:i, amt:v});
+    else if(v < -0.001) debtors.push({idx:i, amt:-v});
+  });
+  // sort largest first for minimum transactions
+  creditors.sort((a,b)=>b.amt-a.amt);
+  debtors.sort((a,b)=>b.amt-a.amt);
+
+  let transactions = [], ci=0, di=0;
+  while(ci < creditors.length && di < debtors.length){
+    let c = creditors[ci], d = debtors[di];
+    let settle = Math.round(Math.min(c.amt, d.amt) * 100) / 100;
+    if(settle > 0) transactions.push({from: playerNames[d.idx], to: playerNames[c.idx], amount: settle});
+    c.amt -= settle; d.amt -= settle;
+    if(c.amt < 0.001) ci++;
+    if(d.amt < 0.001) di++;
+  }
+
+  let el = document.getElementById('settlementSection');
+  if(!transactions.length){
+    el.innerHTML = `<div class="settlement-box"><h3>💰 Settlement</h3><div class="settle-all-square">Accounts settled. No transfers required.</div></div>`;
+    return;
+  }
+  let rows = transactions.map(t=>`
+    <div class="settle-row">
+      <span class="settle-from">${esc(t.from)}</span>
+      <span class="settle-arrow">owes</span>
+      <span class="settle-to">${esc(t.to)}</span>
+      <span class="settle-amount">$${t.amount.toFixed(2)}</span>
+    </div>`).join('');
+  el.innerHTML = `<div class="settlement-box"><h3>💰 Settlement</h3>${rows}</div>`;
+}
+
+function toggleBankerScorecard(){
+  let modal = document.getElementById('bankerScorecardModal');
+  if(modal.classList.contains('hidden')){
+    renderBankerScorecard();
+    modal.classList.remove('hidden');
+  } else {
+    modal.classList.add('hidden');
+  }
+}
+
+function renderBankerScorecard(){
+  // Header: Hole | Par | Yds | [player scores] | Banker | Result
+  let thead = document.getElementById('bankerScorecardHead');
+  let tbody = document.getElementById('bankerScorecardBody');
+  thead.innerHTML = '<th>#</th><th>Par</th><th>Yds</th>'
+    + playerNames.map(n=>`<th>${esc(n)}</th>`).join('')
+    + '<th>Banker</th><th>Result</th>';
+  tbody.innerHTML = '';
+
+  holeHistory.forEach(h=>{
+    let par='-', dist='-';
+    if(selectedCourse && selectedCourse.holes[h.holeNum-1]){
+      par = selectedCourse.holes[h.holeNum-1].par;
+      dist = selectedCourse.holes[h.holeNum-1].distance;
+    }
+    let row = `<tr>
+      <td>${h.holeNum}</td><td>${par}</td><td>${dist}</td>`;
+    for(let i=0; i<playerNames.length; i++){
+      let isBanker = i === h.bankerIdx;
+      row += `<td class="${isBanker?'sc-banker-cell':''}">${h.scores[i]}</td>`;
+    }
+    row += `<td class="sc-banker-cell">${esc(playerNames[h.bankerIdx])}</td>`;
+
+    // Result: per-matchup outcome
+    let parts = [];
+    if(h.allTied){
+      parts.push('Carryover');
+    } else {
+      h.matchups.forEach(m=>{
+        if(m.result === 'banker')
+          parts.push(`<span class="sc-neg">${esc(playerNames[m.playerIdx])} -$${m.amount}</span>`);
+        else if(m.result === 'player')
+          parts.push(`<span class="sc-pos">${esc(playerNames[m.playerIdx])} +$${m.amount}</span>`);
+      });
+    }
+    row += `<td style="font-size:11px;text-align:left;min-width:80px">${parts.join('<br>')}</td></tr>`;
+    tbody.innerHTML += row;
+  });
+
+  // Totals row
+  let totRow = '<tr style="font-weight:bold;background:#1c4729"><td colspan="3">Net</td>';
+  for(let i=0; i<playerNames.length; i++){
+    let v = playerNetTotals[i];
+    let sign = v > 0 ? '+' : '';
+    let cls = v > 0 ? 'sc-pos' : v < 0 ? 'sc-neg' : '';
+    totRow += `<td class="${cls}">${sign}$${v}</td>`;
+  }
+  totRow += '<td colspan="2"></td></tr>';
+  tbody.innerHTML += totRow;
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function flipCard(id){
+  const inner = document.getElementById(id);
+  inner.classList.toggle('flipped');
+  const btn = document.querySelector('.flip-btn');
+  if(btn) btn.style.display = inner.classList.contains('flipped') ? 'none' : 'flex';
+}
+</script>
+</body>
+</html>

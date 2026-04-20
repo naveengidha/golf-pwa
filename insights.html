@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f4d2b">
+<title>Insights</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:Arial,Helvetica,sans-serif;background:#1f4d2b;color:#fff;display:flex;flex-direction:column;min-height:100vh;}
+.topnav{display:flex;align-items:center;background:#1c4729;padding:10px 16px;gap:12px;flex-shrink:0;border-bottom:2px solid #ffd447;box-shadow:0 2px 12px rgba(0,0,0,0.5);}
+.back-btn{background:none;border:none;color:#ffd447;font-size:15px;font-weight:bold;cursor:pointer;padding:4px 8px 4px 0;white-space:nowrap;text-decoration:none;}
+.back-btn:hover{color:#ffcc2a;}
+.topnav-title{font-size:15px;font-weight:bold;color:#ffd447;flex:1;text-align:center;letter-spacing:.5px;}
+.scroll-area{flex:1;overflow-y:auto;padding:16px 14px 80px;}
+.player-select-wrap{margin-bottom:20px;}
+.player-select-wrap label{display:block;font-size:10px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:rgba(255,212,71,0.6);margin-bottom:6px;}
+.player-select{width:100%;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(184,150,46,0.3);color:#fff;font-size:15px;appearance:none;color-scheme:dark;}
+.no-data{text-align:center;color:rgba(255,255,255,0.2);font-size:13px;padding:60px 20px;line-height:2;}
+.game-card{background:rgba(0,0,0,0.25);border:1px solid rgba(184,150,46,0.2);border-top:2px solid rgba(184,150,46,0.5);border-radius:12px;margin-bottom:14px;overflow:hidden;}
+.game-card-header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(184,150,46,0.15);}
+.game-card-icon{font-size:18px;}
+.game-card-title{font-size:13px;font-weight:bold;letter-spacing:.3px;color:#ffd447;}
+.game-card-sub{font-size:11px;color:rgba(255,255,255,0.35);margin-left:auto;}
+.game-card-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.insight-row{display:flex;align-items:center;justify-content:space-between;}
+.insight-label{font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:.2px;}
+.insight-value{font-size:14px;font-weight:bold;letter-spacing:.3px;}
+.val-good{color:#2ecc71;}
+.val-bad{color:#ff6b6b;}
+.val-neutral{color:#ffd447;}
+.val-plain{color:#fff;}
+.insight-divider{height:1px;background:rgba(255,255,255,0.06);}
+.bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#1c4729;border-top:1px solid rgba(255,212,71,0.25);z-index:200;}
+.bn-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 12px;gap:3px;cursor:pointer;text-decoration:none;color:rgba(255,212,71,0.4);font-size:10px;font-weight:bold;letter-spacing:.5px;text-transform:uppercase;-webkit-user-select:none;}
+.bn-tab.active{color:#ffd447;}
+.bn-tab-icon{font-size:18px;line-height:1;}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a class="back-btn" href="index.html">‹ Menu</a>
+  <div class="topnav-title">Insights</div>
+  <div class="topnav-spacer"></div>
+</div>
+
+<div class="scroll-area">
+  <div class="player-select-wrap">
+    <label>Player</label>
+    <select class="player-select" id="playerSelect" onchange="render()">
+      <option value="">— select player —</option>
+    </select>
+  </div>
+  <div id="insightsBody"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="bn-tab" href="history.html">
+    <span class="bn-tab-icon">🏆</span>Trophy Room
+  </a>
+  <a class="bn-tab active" href="insights.html">
+    <span class="bn-tab-icon">📈</span>Insights
+  </a>
+  <a class="bn-tab" href="intel.html">
+    <span class="bn-tab-icon">🔬</span>Rounds
+  </a>
+</nav>
+
+<script>
+function loadHistory(){ try{ return JSON.parse(localStorage.getItem('gameHistory')||'[]'); }catch(e){ return []; } }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function getAllPlayers(){
+  const names = new Set();
+  loadHistory().forEach(r=>{ (r.players||[]).forEach(p=>{ if(p) names.add(p); }); });
+  return [...names].sort();
+}
+
+function init(){
+  const players = getAllPlayers();
+  const sel = document.getElementById('playerSelect');
+  players.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); });
+  if(players.length===1){ sel.value=players[0]; render(); }
+}
+
+function render(){
+  const player = document.getElementById('playerSelect').value;
+  const body = document.getElementById('insightsBody');
+  if(!player){ body.innerHTML=''; return; }
+
+  const history = loadHistory();
+  let html = '';
+
+  // ── Banker ──────────────────────────────────────────────────────
+  const bankerGames = history.filter(r=>r.game==='banker' && r.players.includes(player));
+  if(bankerGames.length){
+    let totalHoles=0, holesAsBanker=0;
+    let bankerScores=[], nonBankerScores=[], allScores=[];
+    let doubledHoles=0, doubledWins=0;
+    let bankerWins=0, bankerOpps=0;
+    let potWhenDoubled=0, potWhenNotDoubled=0, doubledCount=0, notDoubledCount=0;
+    let bestScoreHoles=0;
+
+    bankerGames.forEach(r=>{
+      const pi = r.players.indexOf(player);
+      if(!r.holeHistory) return;
+      r.holeHistory.forEach(h=>{
+        totalHoles++;
+        const isBanker = h.bankerIdx === pi;
+        const myScore = h.scores[pi];
+        allScores.push(myScore);
+
+        if(isBanker){
+          holesAsBanker++;
+          bankerScores.push(myScore);
+          // banker win = all matchups result 'banker'
+          const mu = h.matchups||[];
+          const settled = mu.filter(m=>m.result!=='tie');
+          if(settled.length>0){
+            bankerOpps++;
+            if(settled.every(m=>m.result==='banker')) bankerWins++;
+          }
+        } else {
+          nonBankerScores.push(myScore);
+        }
+
+        // double frequency & avg pot
+        const didDouble = h.doubles?.[pi];
+        if(didDouble){
+          doubledHoles++;
+          const myMatchup = (h.matchups||[]).find(m=>m.playerIdx===(isBanker?-1:pi));
+          // for pot size use holeValue from any matchup involving this player
+          const relevantMatchup = isBanker
+            ? (h.matchups||[])[0]
+            : (h.matchups||[]).find(m=>m.playerIdx===pi);
+          if(relevantMatchup) { potWhenDoubled += relevantMatchup.holeValue; doubledCount++; }
+          const won = isBanker
+            ? (h.matchups||[]).every(m=>m.result==='banker')
+            : (h.matchups||[]).find(m=>m.playerIdx===pi)?.result==='player';
+          if(won) doubledWins++;
+        } else {
+          const relevantMatchup = isBanker
+            ? (h.matchups||[])[0]
+            : (h.matchups||[]).find(m=>m.playerIdx===pi);
+          if(relevantMatchup) { potWhenNotDoubled += relevantMatchup.holeValue; notDoubledCount++; }
+        }
+
+        // best score on hole = outright lowest among all players
+        const minScore = Math.min(...h.scores);
+        const minCount = h.scores.filter(s=>s===minScore).length;
+        if(myScore===minScore && minCount===1) bestScoreHoles++;
+      });
+    });
+
+    const bankerAvg = bankerScores.length ? (bankerScores.reduce((s,v)=>s+v,0)/bankerScores.length).toFixed(1) : '–';
+    const nonBankerAvg = nonBankerScores.length ? (nonBankerScores.reduce((s,v)=>s+v,0)/nonBankerScores.length).toFixed(1) : '–';
+    const doubleWinRate = doubledHoles>0 ? Math.round(doubledWins/doubledHoles*100)+'%' : '–';
+    const doubleWinClass = doubledHoles>0 ? (doubledWins/doubledHoles>=0.5?'val-good':'val-bad') : 'val-neutral';
+    const bankerWinRate = bankerOpps>0 ? Math.round(bankerWins/bankerOpps*100)+'%' : '–';
+    const bankerWinClass = bankerOpps>0 ? (bankerWins/bankerOpps>=0.5?'val-good':'val-bad') : 'val-neutral';
+    const doubleFreq = totalHoles>0 ? Math.round(doubledHoles/totalHoles*100)+'%' : '–';
+    const avgPotDoubled = doubledCount>0 ? '$'+(potWhenDoubled/doubledCount).toFixed(0) : '–';
+    const avgPotNotDoubled = notDoubledCount>0 ? '$'+(potWhenNotDoubled/notDoubledCount).toFixed(0) : '–';
+    const bestScorePct = totalHoles>0 ? Math.round(bestScoreHoles/totalHoles*100)+'%' : '–';
+
+    let netTotal = 0;
+    bankerGames.forEach(r=>{
+      const pi = r.players.indexOf(player);
+      netTotal += r.playerNetTotals?.[pi] ?? 0;
+    });
+    const netStr = (netTotal>=0?'+$':'−$')+Math.abs(netTotal).toFixed(0);
+    const netClass = netTotal>0?'val-good':netTotal<0?'val-bad':'val-neutral';
+
+    html += card('🏦','The Banker', bankerGames.length+' rounds',[
+      ['Holes played', totalHoles, 'val-plain'],
+      ['Holes as Banker', holesAsBanker, 'val-plain'],
+      ['Scoring avg as Banker', bankerAvg, 'val-neutral'],
+      ['Scoring avg as non-Banker', nonBankerAvg, 'val-neutral'],
+      ['% holes with best score', bestScorePct, bestScoreHoles/totalHoles>=0.25?'val-good':'val-neutral'],
+      ['Banker win rate', bankerWinRate, bankerWinClass],
+      ['Double frequency', doubleFreq, 'val-neutral'],
+      ['Win rate after doubling', doubleWinRate, doubleWinClass],
+      ['Net winnings', netStr, netClass],
+    ]);
+  }
+
+  // ── Grand Prix ───────────────────────────────────────────────────
+  const f1Games = history.filter(r=>r.game==='f1' && r.players.includes(player));
+  if(f1Games.length){
+    let totalPts=0, totalHoles=0, wins=0, top3=0;
+    f1Games.forEach(r=>{
+      const pi = r.players.indexOf(player);
+      const myPts = r.playerTotals?.[pi] ?? 0;
+      totalPts += myPts;
+      totalHoles += r.pointHistory?.length ?? 0;
+      const isBlack = (r.teamBlackPlayers||[]).includes(player);
+      const teamIdx = isBlack ? 0 : 1;
+      const otherIdx = isBlack ? 1 : 0;
+      if((r.teamTotals?.[teamIdx]??0) > (r.teamTotals?.[otherIdx]??0)) wins++;
+      const rank = (r.playerTotals||[]).filter(p=>p>myPts).length + 1;
+      if(rank<=3) top3++;
+    });
+    const avgPts = (totalPts/f1Games.length).toFixed(1);
+    const ptsPerHole = totalHoles>0 ? (totalPts/totalHoles).toFixed(1) : '–';
+    const top3Pct = Math.round(top3/f1Games.length*100)+'%';
+    html += card('🏎️','Grand Prix', f1Games.length+' rounds',[
+      ['Holes played', totalHoles, 'val-plain'],
+      ['Team wins', wins, wins>f1Games.length/2?'val-good':'val-neutral'],
+      ['% Rounds in top 3', top3Pct, top3/f1Games.length>=0.5?'val-good':'val-neutral'],
+      ['Avg points/round', avgPts, 'val-neutral'],
+      ['Points/hole', ptsPerHole, 'val-neutral'],
+    ]);
+  }
+
+  // ── Match Play ───────────────────────────────────────────────────
+  const mpGames = history.filter(r=>r.game==='matchplay' && r.players.includes(player));
+  if(mpGames.length){
+    let wins=0, losses=0, halved=0;
+    let bounceOpps=0, bounceHits=0;
+    mpGames.forEach(r=>{
+      const pi = r.players.indexOf(player);
+      (r.matchResults||[]).forEach(m=>{
+        if(m.p1!==pi && m.p2!==pi) return;
+        const isP1 = m.p1===pi;
+        if(m.status==='halved') halved++;
+        else if(m.status==='p1'){ if(isP1) wins++; else losses++; }
+        else if(m.status==='p2'){ if(!isP1) wins++; else losses++; }
+
+        // bounce-back: from scoreHistory, find holes where player lost, then check next hole
+        const sc = r.scoreHistory||[];
+        const opp = isP1 ? m.p2 : m.p1;
+        for(let i=0; i<sc.length-1; i++){
+          const myS = sc[i][pi], oppS = sc[i][opp];
+          const lost = myS > oppS;
+          if(lost){
+            bounceOpps++;
+            const myNext = sc[i+1][pi], oppNext = sc[i+1][opp];
+            if(myNext <= oppNext) bounceHits++; // won or halved
+          }
+        }
+      });
+    });
+    const total = wins+losses+halved||1;
+    const winPct = Math.round(wins/total*100);
+    const bouncePct = bounceOpps>0 ? Math.round(bounceHits/bounceOpps*100)+'%' : '–';
+    const bounceClass = bounceOpps>0 ? (bounceHits/bounceOpps>=0.5?'val-good':'val-bad') : 'val-neutral';
+    html += card('⚔️','Match Play', mpGames.length+' rounds',[
+      ['Record (W/L/H)', `${wins}/${losses}/${halved}`, 'val-plain'],
+      ['Win rate', winPct+'%', winPct>=50?'val-good':'val-bad'],
+      ['Bounce back rate', bouncePct, bounceClass],
+    ]);
+  }
+
+  // ── Stableford ───────────────────────────────────────────────────
+  const sfGames = history.filter(r=>r.game==='stableford' && r.players.includes(player));
+  if(sfGames.length){
+    let totalPts=0, totalHoles=0, birdies=0, zeroes=0, pars=0, best=0;
+    sfGames.forEach(r=>{
+      const pi = r.players.indexOf(player);
+      const roundPts = r.playerTotals?.[pi] ?? 0;
+      totalPts += roundPts;
+      if(roundPts>best) best=roundPts;
+      (r.pointHistory||[]).forEach(hole=>{
+        const pts = hole[pi] ?? 0;
+        totalHoles++;
+        if(pts>=3) birdies++;
+        if(pts===0) zeroes++;
+        if(pts>=2) pars++;
+      });
+    });
+    const ptsPerHole = totalHoles>0 ? (totalPts/totalHoles).toFixed(1) : '–';
+    const birdieRate = totalHoles>0 ? Math.round(birdies/totalHoles*100)+'%' : '–';
+    const zeroPct = totalHoles>0 ? Math.round(zeroes/totalHoles*100)+'%' : '–';
+    const parConv = totalHoles>0 ? Math.round(pars/totalHoles*100)+'%' : '–';
+    html += card('⭐','Stableford', sfGames.length+' rounds',[
+      ['Holes played', totalHoles, 'val-plain'],
+      ['Points/hole', ptsPerHole, 'val-neutral'],
+      ['Birdie rate', birdieRate, birdies/totalHoles>=0.2?'val-good':'val-neutral'],
+      ['Zero point holes', zeroPct, zeroes/totalHoles<=0.1?'val-good':'val-bad'],
+      ['Par conversion', parConv, pars/totalHoles>=0.5?'val-good':'val-neutral'],
+      ['Best round', best+' pts', 'val-good'],
+    ]);
+  }
+
+  if(!html) html = `<div class="no-data">No rounds found for this player.<br>Play some games to see insights here.</div>`;
+  body.innerHTML = html;
+}
+
+function card(icon, title, sub, rows){
+  const rowHtml = rows.map((r,i)=>`
+    ${i>0?'<div class="insight-divider"></div>':''}
+    <div class="insight-row">
+      <span class="insight-label">${r[0]}</span>
+      <span class="insight-value ${r[2]}">${r[1]}</span>
+    </div>`).join('');
+  return `<div class="game-card">
+    <div class="game-card-header">
+      <span class="game-card-icon">${icon}</span>
+      <span class="game-card-title">${title}</span>
+      <span class="game-card-sub">${sub}</span>
+    </div>
+    <div class="game-card-body">${rowHtml}</div>
+  </div>`;
+}
+
+init();
+</script>
+</body>
+</html>
