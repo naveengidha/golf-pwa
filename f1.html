@@ -22,17 +22,17 @@ h3{text-align:center;margin-top:0;color:rgba(255,255,255,0.75);}
 .scroll-area{flex:1;overflow-y:auto;padding:20px 16px 40px;display:flex;justify-content:center;}
 .container{
   background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
-    #1a1a2e;
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 8px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 8px),
+    #1e4d1e;
   border:1px solid rgba(225,6,0,0.4);
   padding:24px 20px;border-radius:12px;width:100%;max-width:480px;
   box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative;
 }
 .setup-player-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.name-input{flex:1;padding:10px;border-radius:6px;border:1px solid rgba(225,6,0,0.3);border-bottom:2px solid rgba(225,6,0,0.5);color:white;font-size:15px;background:rgba(0,0,0,0.3);}
-.name-input.black{border-left:3px solid #aaa!important;}
-.name-input.red{border-left:3px solid #e10600!important;}
+.name-input{flex:1;padding:10px;border-radius:6px;border:1px solid rgba(225,6,0,0.3);border-bottom:2px solid rgba(255,255,255,0.15);color:white;font-size:15px;background:rgba(0,0,0,0.3);}
+.name-input.black{border-left:3px solid #000!important;border-bottom:2px solid #000!important;}
+.name-input.red{border-left:3px solid #e10600!important;border-bottom:2px solid rgba(225,6,0,0.5)!important;}
 .name-input::placeholder{color:rgba(255,255,255,0.35);}
 .row-setting{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
 .row-setting label{font-size:12px;white-space:nowrap;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.5px;}
@@ -48,6 +48,8 @@ button.btn-secondary:hover,button.btn-secondary:active{background:rgba(225,6,0,0
 .player-box{display:flex;flex-direction:column;align-items:center;}
 .player-box>label{font-size:12px;font-weight:bold;margin-bottom:6px;text-align:center;color:rgba(255,255,255,0.8);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;}
 .player-box input[type=number]{padding:10px 4px;border-radius:6px;border:1px solid rgba(225,6,0,0.25);text-align:center;font-size:22px;font-weight:bold;width:100%;background:rgba(0,0,0,0.35);color:white;font-family:'Courier New',monospace;}
+.player-box input.black{border-color:rgba(255,255,255,0.2);border-bottom:2px solid #000;}
+.player-box input.red{border-bottom:2px solid rgba(225,6,0,0.5);}
 .results{margin-top:16px;background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;border:1px solid rgba(225,6,0,0.2);}
 .results h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,100,80,0.6);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(225,6,0,0.2);}
 .result-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:15px;}
@@ -63,8 +65,8 @@ thead th{background:rgba(0,0,0,0.4);color:#ffd447;letter-spacing:.5px;text-trans
 td{font-family:'Courier New',monospace;}
 .current-hole td{background:rgba(225,6,0,0.08);font-weight:bold;}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:1000;}
-.modal-content{background:#1a1a2e;border:1px solid rgba(225,6,0,0.5);width:92%;max-width:620px;max-height:88vh;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
-.modal-header{background:#0d0d1a;border-bottom:1px solid rgba(225,6,0,0.3);color:#ffd447;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-weight:bold;font-size:15px;letter-spacing:.5px;}
+.modal-content{background:#1e4d1e;border:1px solid rgba(225,6,0,0.5);width:92%;max-width:620px;max-height:88vh;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+.modal-header{background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(225,6,0,0.3);color:#ffd447;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-weight:bold;font-size:15px;letter-spacing:.5px;}
 .modal-body{overflow-y:auto;padding:10px;}
 .close-btn{background:none;border:none;color:white;font-size:22px;cursor:pointer;width:auto;padding:0 4px;}
 .flip-card{width:100%;}
@@ -76,10 +78,10 @@ td{font-family:'Courier New',monospace;}
   backface-visibility:hidden;-webkit-backface-visibility:hidden;
   transform:rotateY(180deg);
   background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
-    #1a1a2e;
-  border:1px solid rgba(225,6,0,0.4);
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 8px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 8px),
+    #1e4d1e;
+  border:1px solid rgba(255,255,255,0.07);
   padding:24px 20px;border-radius:12px;
 }
 .flip-inner.flipped .flip-front{position:absolute;inset:0;}
@@ -94,6 +96,12 @@ td{font-family:'Courier New',monospace;}
 .rules-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:14px;}
 .rules-table td:first-child{color:rgba(255,255,255,0.5);width:40%;}
 .rules-table td:last-child{font-weight:bold;font-family:'Courier New',monospace;color:#ffd447;}
+.hole-info-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;}
+.par-btns{display:flex;align-items:center;gap:4px;}
+.par-btns-label{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:.5px;text-transform:uppercase;margin-right:2px;}
+.par-btn{width:34px;height:34px;padding:0;border-radius:6px;font-size:14px;font-weight:bold;background:rgba(0,0,0,0.25);border:1px solid rgba(225,6,0,0.3);color:rgba(255,255,255,0.5);box-shadow:none;margin:0;letter-spacing:0;}
+.par-btn.active{background:rgba(225,6,0,0.2);border-color:#e10600;color:#ff4422;}
+.dist-input{width:72px;padding:7px 8px;border-radius:6px;border:1px solid rgba(225,6,0,0.3);background:rgba(0,0,0,0.25);color:#fff;font-size:14px;text-align:center;}
 .rules-note{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;text-align:center;margin-top:4px;}
 </style>
 </head>
@@ -116,6 +124,8 @@ td{font-family:'Courier New',monospace;}
 
         <div class="flip-front">
           <h2>New Game</h2>
+          <input class="course-input" id="courseInput" placeholder="Course name (optional)">
+          <input type="date" class="course-input" id="roundDate">
           <div id="playerRows">
             <div class="setup-player-row">
               <input class="name-input black" id="name0" placeholder="Player 1 (Black Team)">
@@ -130,15 +140,13 @@ td{font-family:'Courier New',monospace;}
               <input class="name-input red" id="name3" placeholder="Player 4 (Red Team)">
             </div>
           </div>
-          <div class="row-setting">
+          <div class="row-setting" style="margin-top:12px;">
             <label>Holes:</label>
             <select id="holesSelect" class="select-input">
               <option value="9">9</option>
               <option value="18" selected>18</option>
             </select>
           </div>
-          <select class="course-input" id="courseSelect"></select>
-          <input type="date" class="course-input" id="roundDate">
           <button onclick="startGame()">Start Game</button>
           <div id="nameError">Please enter all 4 player names.</div>
         </div>
@@ -167,8 +175,19 @@ td{font-family:'Courier New',monospace;}
 
   <!-- GAME -->
   <div id="gameScreen" class="hidden">
-    <h2>Hole <span id="holeLabel">1</span></h2>
-    <h3>Par <span id="parLabel">–</span> &nbsp;·&nbsp; <span id="distLabel">–</span> yds</h3>
+    <div style="text-align:center;">
+      <span id="courseNameLabel" style="font-size:11px;color:rgba(255,212,71,0.5);letter-spacing:.5px;text-transform:uppercase;display:none;"></span>
+      <h2 style="margin-top:2px;">Hole <span id="holeLabel">1</span></h2>
+    </div>
+    <div class="hole-info-row">
+      <div class="par-btns">
+        <span class="par-btns-label">Par</span>
+        <button type="button" class="par-btn" onclick="setPar(3)">3</button>
+        <button type="button" class="par-btn" onclick="setPar(4)">4</button>
+        <button type="button" class="par-btn" onclick="setPar(5)">5</button>
+      </div>
+      <input type="number" class="dist-input" id="distInput" inputmode="numeric" placeholder="Yds" min="1">
+    </div>
 
     <div class="score-row">
       <div class="player-box">
@@ -257,35 +276,19 @@ if('serviceWorker' in navigator){
 
 let hole = 1;
 let totalHoles = 18;
+let courseName = '';
 let playerNames = [];
 let playerTotals = [0,0,0,0];
 let teamTotalsRunning = [0,0];
 let scoreHistory = [];
 let pointHistory = [];
-let courses = [];
-let selectedCourse = null;
+let holeParDist = [];
+let currentPar = 4;
 
 document.getElementById('roundDate').value = new Date().toLocaleDateString('en-CA');
 document.getElementById('scorecardModal').addEventListener('click', function(e){
   if(e.target === this) closeScorecard();
 });
-fetch('courses.json')
-  .then(r => { if(!r.ok) throw new Error('unavailable'); return r.json(); })
-  .then(data => {
-    courses = data.courses;
-    let sel = document.getElementById('courseSelect');
-    courses.forEach((c,i) => {
-      let o = document.createElement('option');
-      o.value = i; o.textContent = c.name;
-      sel.appendChild(o);
-    });
-  })
-  .catch(() => {
-    let sel = document.getElementById('courseSelect');
-    let o = document.createElement('option');
-    o.textContent = 'Course data unavailable'; o.value = '';
-    sel.appendChild(o);
-  });
 
 document.querySelectorAll('.name-input').forEach(input => {
   input.addEventListener('input', () => {
@@ -315,9 +318,11 @@ function startGame(){
   });
   if(hasError){ errEl.style.display = 'block'; return; }
 
-  let idx = document.getElementById('courseSelect').value;
-  if(idx !== '' && courses.length > 0) selectedCourse = courses[idx];
+  let idx = document.getElementById('holesSelect');
   totalHoles = Number(document.getElementById('holesSelect').value)||18;
+  courseName = document.getElementById('courseInput').value.trim();
+  currentPar = 4;
+  holeParDist = [];
 
   playerNames = n;
   ['p1Label','p2Label','p3Label','p4Label'].forEach((id,i) => {
@@ -335,17 +340,18 @@ function startGame(){
     'Black: 0.0 \u00a0·\u00a0 Red: 0.0';
 }
 
+function setPar(p){
+  currentPar = p;
+  document.querySelectorAll('.par-btn').forEach(b=>b.classList.toggle('active', Number(b.textContent)===p));
+}
+
 function updateHoleInfo(){
   document.getElementById('holeLabel').textContent = hole;
-  document.getElementById('topnavTitle').textContent = `Grand Prix — Hole ${hole}/${totalHoles}`;
-  if(!selectedCourse){
-    document.getElementById('parLabel').textContent = '–';
-    document.getElementById('distLabel').textContent = '–';
-    return;
-  }
-  let h = selectedCourse.holes[hole-1];
-  document.getElementById('parLabel').textContent = h.par;
-  document.getElementById('distLabel').textContent = h.distance;
+  document.getElementById('topnavTitle').textContent = `Grand Prix`;
+  let cnl = document.getElementById('courseNameLabel');
+  cnl.textContent = courseName; cnl.style.display = courseName ? '' : 'none';
+  document.querySelectorAll('.par-btn').forEach(b=>b.classList.toggle('active', Number(b.textContent)===currentPar));
+  document.getElementById('distInput').value = '';
 }
 
 function calculateTeamPoints(scores, teams){
@@ -378,6 +384,7 @@ function calculateHole(){
   document.getElementById('holeError').style.display='none';
   const teams = [0,0,1,1];
   const result = calculateTeamPoints(scores, teams);
+  holeParDist.push({par: currentPar, dist: document.getElementById('distInput').value || ''});
   scoreHistory.push(scores);
   pointHistory.push(result.playerPoints);
   for(let i=0;i<4;i++) playerTotals[i] += result.playerPoints[i];
@@ -420,11 +427,8 @@ function renderPreviewTable(){
   let tbody = document.querySelector('#previewTable tbody');
   tbody.innerHTML = '';
   for(let i=0;i<scoreHistory.length;i++){
-    let par='-', yards='-';
-    if(selectedCourse && selectedCourse.holes[i]){
-      par = selectedCourse.holes[i].par;
-      yards = selectedCourse.holes[i].distance;
-    }
+    let par = holeParDist[i]?.par ?? '-';
+    let yards = holeParDist[i]?.dist || '-';
     let isCurrent = (i === scoreHistory.length-1);
     let row = `<tr class="${isCurrent?'current-hole':''}">
       <td>${i+1}</td><td>${par}</td><td>${yards}</td>`;
@@ -442,15 +446,16 @@ function saveGameResult(){
     history.push({
       id: Date.now(),
       game: 'f1',
+      course: document.getElementById('courseInput').value.trim() || '',
       date: new Date(document.getElementById('roundDate').value+'T12:00:00').toISOString(),
-      course: selectedCourse ? selectedCourse.name : 'Unknown Course',
       players: [...playerNames],
       teamBlackPlayers: [playerNames[0], playerNames[1]],
       teamRedPlayers: [playerNames[2], playerNames[3]],
       playerTotals: [...playerTotals],
       teamTotals: [...teamTotalsRunning],
       scoreHistory: scoreHistory.map(h=>[...h]),
-      pointHistory: pointHistory.map(h=>[...h])
+      pointHistory: pointHistory.map(h=>[...h]),
+      holeParDist: holeParDist.map(h=>({...h}))
     });
     localStorage.setItem('gameHistory', JSON.stringify(history));
   }catch(e){}
@@ -463,8 +468,8 @@ function endGame(){
   document.getElementById('topnavTitle').textContent = 'Grand Prix';
   let tbody = document.querySelector('#resultsTable tbody');
   for(let i=0;i<totalHoles;i++){
-    let par='-', yards='-';
-    if(selectedCourse && selectedCourse.holes[i]){ par=selectedCourse.holes[i].par; yards=selectedCourse.holes[i].distance; }
+    let par = holeParDist[i]?.par ?? '-';
+    let yards = holeParDist[i]?.dist || '-';
     let row = `<tr><td>${i+1}</td><td>${par}</td><td>${yards}</td>`;
     for(let p=0;p<4;p++){
       let s = scoreHistory[i] ? scoreHistory[i][p] : '-';

@@ -135,11 +135,9 @@ function loadRounds(){
 function renderIntelHTML(){
   const rounds = loadRounds();
   const players = [...new Set(rounds.map(r=>r.player))].sort();
-  const courses = [...new Set(rounds.map(r=>r.course))].sort();
   const dates = [...new Set(rounds.map(r=>r.date?.slice(0,10)))].filter(Boolean).sort((a,b)=>b.localeCompare(a));
 
   const pOptions = ['<option value="all">Select a player</option>', ...players.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`)].join('');
-  const cOptions = ['<option value="all">All Courses</option>', ...courses.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`)].join('');
   const dOptions = ['<option value="all">All Dates</option>', ...dates.map(d=>{
     const label = new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',year:'numeric',month:'short',day:'numeric'});
     return `<option value="${d}">${label}</option>`;
@@ -148,7 +146,6 @@ function renderIntelHTML(){
   return `
     <div class="analysis-filters">
       <select id="analysisPlayerSelect" onchange="renderAnalysis()">${pOptions}</select>
-      <select id="analysisCourseSelect" onchange="renderAnalysis()">${cOptions}</select>
       <select id="analysisDateSelect" onchange="renderAnalysis()">${dOptions}</select>
       <div class="analysis-par-row" id="analysisParBtns">
         <button class="${analysisParSel==='all'?'active':''}" onclick="analysisParFilter('all',this)">All</button>
@@ -171,7 +168,6 @@ function analysisParFilter(p, btn){
 function renderAnalysis(){
   let rounds = loadRounds();
   const playerFilter = document.getElementById('analysisPlayerSelect').value;
-  const courseFilter = document.getElementById('analysisCourseSelect').value;
   const dateFilter = document.getElementById('analysisDateSelect')?.value ?? 'all';
 
   if(playerFilter === 'all'){
@@ -180,7 +176,6 @@ function renderAnalysis(){
   }
 
   if(playerFilter !== 'all') rounds = rounds.filter(r=>r.player===playerFilter);
-  if(courseFilter !== 'all') rounds = rounds.filter(r=>r.course===courseFilter);
   if(dateFilter !== 'all') rounds = rounds.filter(r=>r.date?.slice(0,10)===dateFilter);
 
   const body = document.getElementById('analysisBody');
@@ -237,6 +232,8 @@ function renderAnalysis(){
       <div class="stat-tile"><div class="sv ${stats.puttsPerGir===null||stats.puttsPerGir<=1.8?'good':'bad'}">${stats.puttsPerGir===null?'–':stats.puttsPerGir.toFixed(2)}</div><div class="sl">Putts per GIR</div></div>
       <div class="stat-tile"><div class="sv ${stats.threePutts===0?'good':'bad'}">${stats.threePutts}</div><div class="sl">3-Putts</div></div>
       <div class="stat-tile"><div class="sv ${stats.totalPen<=3?'neutral':'bad'}">${stats.totalPen}</div><div class="sl">Total Penalties</div></div>
+      <div class="stat-tile"><div class="sv ${stats.teeBunkers===0?'good':stats.teeBunkers<=2?'neutral':'bad'}">${stats.teeBunkers} <span style="font-size:12px;opacity:0.7">(${stats.firOpp>0?Math.round(stats.teeBunkers/stats.firOpp*100):0}%)</span></div><div class="sl">Tee Bunkers</div></div>
+      <div class="stat-tile"><div class="sv ${stats.appBunkers===0?'good':stats.appBunkers<=2?'neutral':'bad'}">${stats.appBunkers} <span style="font-size:12px;opacity:0.7">(${Math.round(stats.appBunkers/stats.n*100)}%)</span></div><div class="sl">Approach Bunkers</div></div>
     </div>
   </div>`;
 
@@ -282,7 +279,7 @@ function renderRoundsHTML(){
       <div class="round-entry-header" onclick="toggleRound('${id}')">
         <div class="round-entry-left">
           <div class="round-entry-name">${esc(r.player||'Player')}</div>
-          <div class="round-entry-meta">${date} &nbsp;·&nbsp; ${esc(r.course||'Unknown Course')} &nbsp;·&nbsp; ${holes.length} holes</div>
+          <div class="round-entry-meta">${date} &nbsp;·&nbsp; ${holes.length} holes</div>
         </div>
         <div class="round-entry-right">
           <span class="round-entry-stp ${stpClass}">${stpStr}</span>
@@ -338,7 +335,7 @@ function calcStats(holes, parFilter){
     return true;
   });
   let n=filtered.length||1;
-  let firOpp=0,firHit=0,gir=0,girPutts=0,putts=0,pen=0,udOpp=0,udHit=0,threePutts=0;
+  let firOpp=0,firHit=0,gir=0,girPutts=0,putts=0,pen=0,udOpp=0,udHit=0,threePutts=0,teeBunkers=0,appBunkers=0;
   let teeDir={L:0,R:0}, appDir={L:0,R:0,S:0,Lo:0};
   filtered.forEach(h=>{
     const hitTee = h.pts!==undefined ? h.pts : h.fir;
@@ -347,9 +344,11 @@ function calcStats(holes, parFilter){
       firOpp++;
       if(hitTee) firHit++;
       else if(h.teeDir && teeDir[h.teeDir]!==undefined) teeDir[h.teeDir]++;
+      if(h.teeBunker) teeBunkers++;
     }
     if(hitApp){ gir++; girPutts+=h.putts; }
     else if(h.airDir && appDir[h.airDir]!==undefined) appDir[h.airDir]++;
+    if(h.appBunker) appBunkers++;
     putts+=h.putts;
     if(h.putts>=3) threePutts++;
     pen+=h.pen;
@@ -367,7 +366,7 @@ function calcStats(holes, parFilter){
     totalPen:pen, udPct:udOpp>0?udHit/udOpp:null, udOpp,
     holesPlayed:filtered.length,
     teeDirDominant:dominantDir(teeDir), appDirDominant:dominantDir(appDir),
-    teeDir, appDir
+    teeDir, appDir, teeBunkers, appBunkers
   };
 }
 
@@ -411,6 +410,9 @@ function buildInsights(stats, name){
   }
   if(stats.totalPen>=5){ insights.push("<span class='tag-bad'>Penalty prone — finds trouble often</span>"); strategy.push("Play conservatively — let them rack up penalty strokes"); }
   else if(stats.totalPen>=3){ insights.push("<span class='tag-bad'>Takes penalties</span>"); strategy.push("Stay patient — they'll give strokes away"); }
+  const totalBunkers = stats.teeBunkers + stats.appBunkers;
+  if(totalBunkers>=4){ insights.push("<span class='tag-bad'>Bunker magnet — frequently finds sand</span>"); strategy.push("Position near bunkers — they have a habit of finding sand"); }
+  else if(totalBunkers>=2){ insights.push("<span class='tag-neutral'>Visits bunkers occasionally</span>"); }
 
   if(!strategy.length) strategy.push("Balanced player — no obvious weakness to exploit");
   return {insights, strategy};

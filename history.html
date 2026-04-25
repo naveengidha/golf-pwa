@@ -215,23 +215,24 @@ function renderF1Card(r){
   for(let h=0; h<r.scoreHistory.length; h++){
     let scores = r.scoreHistory[h];
     let pts = r.pointHistory[h];
+    let par = r.holeParDist?.[h]?.par ?? '-';
+    let yds = r.holeParDist?.[h]?.dist || '-';
     scRows += `<tr>
-      <td>${h+1}</td>
+      <td>${h+1}</td><td>${par}</td><td>${yds}</td>
       ${scores.map((s,i)=>`<td>${s}<br><small style="opacity:.5">(${pts[i].toFixed(1)})</small></td>`).join('')}
     </tr>`;
   }
   scRows += `<tr style="font-weight:bold;background:var(--bg-cell)">
-    <td>Tot</td>
+    <td colspan="3">Tot</td>
     ${r.playerTotals.map(t=>`<td>${t.toFixed(1)}</td>`).join('')}
   </tr>`;
 
-  let scHead = `<th>#</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
+  let scHead = `<th>#</th><th>Par</th><th>Yds</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
 
   return `<div class="round-card" id="card-${r.id}">
     <div class="round-card-header" onclick="toggleCard(${r.id})">
       <div class="rch-left">
-        <div class="rch-date">${date}</div>
-        <div class="rch-course">${esc(r.course)}</div>
+        <div class="rch-date">${date}${r.course ? ` &nbsp;·&nbsp; ${esc(r.course)}` : ''}</div>
         <div class="rch-summary">${esc(r.players.slice(0,2).join(' & '))} vs ${esc(r.players.slice(2,4).join(' & '))}</div>
       </div>
       <div class="rch-result ${resultClass}">${resultText}<br>${bScore} – ${rScore}</div>
@@ -303,10 +304,12 @@ function renderBankerCard(r){
 
   let scHead, scRows = '';
   if(r.holeHistory){
-    scHead = `<th>#</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}<th>Result</th>`;
+    scHead = `<th>#</th><th>Par</th><th>Yds</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}<th>Result</th>`;
     r.holeHistory.forEach(h=>{
+      let par = h.par || '-';
+      let yds = h.dist || '-';
       scRows += `<tr>
-        <td>${h.holeNum}</td>
+        <td>${h.holeNum}</td><td>${par}</td><td>${yds}</td>
         ${h.scores.map((s,i)=>`<td${i===h.bankerIdx?' style="color:var(--accent);font-weight:bold"':''}>${s}</td>`).join('')}
         <td style="font-size:11px;text-align:left">${h.allTied ? 'Carryover' :
           h.matchups.filter(m=>m.result!=='tie').map(m=>
@@ -333,9 +336,8 @@ function renderBankerCard(r){
   return `<div class="round-card" id="card-${r.id}">
     <div class="round-card-header" onclick="toggleCard(${r.id})">
       <div class="rch-left">
-        <div class="rch-date">${date}</div>
-        <div class="rch-course">${esc(r.course)}</div>
-        <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')} &nbsp;|&nbsp; Base $${r.baseValue}</div>
+        <div class="rch-date">${date}${r.course ? ` &nbsp;·&nbsp; ${esc(r.course)}` : ''}</div>
+        <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')} &nbsp;|&nbsp; $${r.minValue??r.baseValue}–$${r.maxValue??r.baseValue}</div>
       </div>
       <div class="rch-result black-win">🏆 ${esc(winnerNames)}<br>+$${maxNet}</div>
       <button class="rch-del" onclick="deleteRound(event,${r.id})" title="Delete">✕</button>
@@ -417,7 +419,8 @@ function renderStablefordCard(r){
   for(let h=0; h<r.scoreHistory.length; h++){
     let scores = r.scoreHistory[h];
     let pts = r.pointHistory[h];
-    let par = '-', yds = '-';
+    let par = r.holeParDist?.[h]?.par ?? '-';
+    let yds = r.holeParDist?.[h]?.dist || '-';
     scRows += `<tr>
       <td>${h+1}</td><td>${par}</td><td>${yds}</td>
       ${scores.map((s,i)=>{
@@ -435,8 +438,7 @@ function renderStablefordCard(r){
   return `<div class="round-card" id="card-${r.id}">
     <div class="round-card-header" onclick="toggleCard(${r.id})">
       <div class="rch-left">
-        <div class="rch-date">${date}</div>
-        <div class="rch-course">${esc(r.course)}</div>
+        <div class="rch-date">${date}${r.course ? ` &nbsp;·&nbsp; ${esc(r.course)}` : ''}</div>
         <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')}</div>
       </div>
       <div class="rch-result black-win">🏆 ${esc(winner.name)}<br>${winner.pts} pts</div>
@@ -517,18 +519,19 @@ function renderMatchPlayCard(r){
     return `<div style="font-size:13px;padding:4px 0;color:rgba(255,255,255,0.75);">${text}</div>`;
   }).join('');
 
-  let scHead = `<th>#</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
-  let scRows = (r.scoreHistory||[]).map((scores,h)=>
-    `<tr><td>${h+1}</td>${scores.map(s=>`<td>${s}</td>`).join('')}</tr>`
-  ).join('');
+  let scHead = `<th>#</th><th>Par</th><th>Yds</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
+  let scRows = (r.scoreHistory||[]).map((scores,h)=>{
+    let par = r.holeParDist?.[h]?.par ?? '-';
+    let yds = r.holeParDist?.[h]?.dist || '-';
+    return `<tr><td>${h+1}</td><td>${par}</td><td>${yds}</td>${scores.map(s=>`<td>${s}</td>`).join('')}</tr>`;
+  }).join('');
 
   let winRecord = winner.won + 'W ' + winner.lost + 'L' + (winner.halved ? ' ' + winner.halved + 'H' : '');
 
   return `<div class="round-card" id="card-${r.id}">
     <div class="round-card-header" onclick="toggleCard(${r.id})">
       <div class="rch-left">
-        <div class="rch-date">${date}</div>
-        <div class="rch-course">${esc(r.course)}</div>
+        <div class="rch-date">${date}${r.course ? ` &nbsp;·&nbsp; ${esc(r.course)}` : ''}</div>
         <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')}</div>
       </div>
       <div class="rch-result black-win">🏆 ${esc(winner.name)}<br>${winRecord}</div>

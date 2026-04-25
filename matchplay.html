@@ -110,6 +110,12 @@ td.sc-worst{color:rgba(255,100,100,0.7);}
 .rules-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
 .rules-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:14px;}
 .rules-table td:first-child{color:rgba(255,255,255,0.5);width:55%;}
+.hole-info-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;}
+.par-btns{display:flex;align-items:center;gap:4px;}
+.par-btns-label{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:.5px;text-transform:uppercase;margin-right:2px;}
+.par-btn{width:34px;height:34px;padding:0;border-radius:6px;font-size:14px;font-weight:bold;background:rgba(0,0,0,0.25);border:1px solid rgba(0,180,216,0.3);color:rgba(255,255,255,0.5);box-shadow:none;margin:0;letter-spacing:0;}
+.par-btn.active{background:rgba(0,180,216,0.2);border-color:#00b4d8;color:#00b4d8;}
+.dist-input{width:72px;padding:7px 8px;border-radius:6px;border:1px solid rgba(0,180,216,0.3);background:rgba(0,0,0,0.25);color:#fff;font-size:14px;text-align:center;}
 .rules-table td:last-child{font-weight:bold;font-family:'Courier New',monospace;color:#00b4d8;}
 .rules-note{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;text-align:center;margin-top:4px;}
 </style>
@@ -133,6 +139,9 @@ td.sc-worst{color:rgba(255,100,100,0.7);}
         <div class="flip-front">
           <h2>New Game</h2>
 
+          <input class="course-input" id="courseInput" placeholder="Course name (optional)">
+          <input type="date" class="course-input" id="roundDate">
+
           <div id="playerRows">
             <div class="setup-player-row">
               <input class="name-input" id="name0" placeholder="Player 1">
@@ -148,15 +157,13 @@ td.sc-worst{color:rgba(255,100,100,0.7);}
             </div>
           </div>
 
-          <div class="row-setting" style="margin-top:4px;">
+          <div class="row-setting" style="margin-top:12px;">
             <label>Holes:</label>
             <select id="holesSelect" class="select-input">
               <option value="9">9</option>
               <option value="18" selected>18</option>
             </select>
           </div>
-          <select class="course-input" id="courseSelect"></select>
-          <input type="date" class="course-input" id="roundDate">
           <button onclick="startGame()">Start Game</button>
           <div id="nameError">Enter at least 2 player names.</div>
         </div>
@@ -184,8 +191,19 @@ td.sc-worst{color:rgba(255,100,100,0.7);}
 
   <!-- GAME -->
   <div id="gameScreen" class="hidden">
-    <h2>Hole <span id="holeLabel">1</span></h2>
-    <h3>Par <span id="parLabel">–</span> &nbsp;·&nbsp; <span id="distLabel">–</span> yds</h3>
+    <div style="text-align:center;">
+      <span id="courseNameLabel" style="font-size:11px;color:rgba(255,212,71,0.5);letter-spacing:.5px;text-transform:uppercase;display:none;"></span>
+      <h2 style="margin-top:2px;">Hole <span id="holeLabel">1</span></h2>
+    </div>
+    <div class="hole-info-row">
+      <div class="par-btns">
+        <span class="par-btns-label">Par</span>
+        <button type="button" class="par-btn" onclick="setPar(3)">3</button>
+        <button type="button" class="par-btn" onclick="setPar(4)">4</button>
+        <button type="button" class="par-btn" onclick="setPar(5)">5</button>
+      </div>
+      <input type="number" class="dist-input" id="distInput" inputmode="numeric" placeholder="Yds" min="1">
+    </div>
 
     <div id="scoreRow" class="score-row"></div>
 
@@ -244,24 +262,14 @@ if('serviceWorker' in navigator){
 
 let hole = 1;
 let totalHoles = 18;
+let courseName = '';
 let playerNames = [];
 let scoreHistory = [];   // [holeIndex][playerIndex]
+let holeParDist = [];
 let matchups = [];       // { p1, p2, holesUp, holesWon:[0,0], status, closedAt }
-let courses = [], selectedCourse = null;
+let currentPar = 4;
 /* ── Course loading ── */
 document.getElementById('roundDate').value = new Date().toLocaleDateString('en-CA');
-fetch('courses.json')
-  .then(r=>r.json())
-  .then(data=>{
-    courses = data.courses||[];
-    let sel = document.getElementById('courseSelect');
-    courses.forEach((c,i)=>{
-      let o=document.createElement('option'); o.value=i; o.textContent=c.name; sel.appendChild(o);
-    });
-  }).catch(()=>{
-    let sel=document.getElementById('courseSelect');
-    let o=document.createElement('option'); o.textContent='Course data unavailable'; o.value=''; sel.appendChild(o);
-  });
 
 /* ── Game start ── */
 function startGame(){
@@ -273,9 +281,10 @@ function startGame(){
   document.getElementById('nameError').style.display = 'none';
 
   playerNames = names;
+  courseName = document.getElementById('courseInput').value.trim();
   totalHoles = Number(document.getElementById('holesSelect').value)||18;
-  let idx = document.getElementById('courseSelect').value;
-  if(idx !== '') selectedCourse = courses[idx]||null;
+  currentPar = 4;
+  holeParDist = [];
 
   // Build all-vs-all matchups
   matchups = [];
@@ -292,17 +301,18 @@ function startGame(){
   renderMatchStatus();
 }
 
+function setPar(p){
+  currentPar = p;
+  document.querySelectorAll('.par-btn').forEach(b=>b.classList.toggle('active', Number(b.textContent)===p));
+}
+
 function renderHoleInfo(){
   document.getElementById('holeLabel').textContent = hole;
-  document.getElementById('topnavTitle').textContent = `Match Play — Hole ${hole}/${totalHoles}`;
-  if(selectedCourse && selectedCourse.holes && selectedCourse.holes[hole-1]){
-    let h = selectedCourse.holes[hole-1];
-    document.getElementById('parLabel').textContent = h.par;
-    document.getElementById('distLabel').textContent = h.distance;
-  } else {
-    document.getElementById('parLabel').textContent = '–';
-    document.getElementById('distLabel').textContent = '–';
-  }
+  document.getElementById('topnavTitle').textContent = `Match Play`;
+  let cnl = document.getElementById('courseNameLabel');
+  cnl.textContent = courseName; cnl.style.display = courseName ? '' : 'none';
+  document.querySelectorAll('.par-btn').forEach(b=>b.classList.toggle('active', Number(b.textContent)===currentPar));
+  document.getElementById('distInput').value = '';
 }
 
 function renderInputs(){
@@ -363,6 +373,7 @@ function nextHole(){
     scores.push(v);
   }
   document.getElementById('holeError').style.display='none';
+  holeParDist.push({par: currentPar, dist: document.getElementById('distInput').value || ''});
   scoreHistory.push(scores);
   processHole(scores);
 
@@ -422,11 +433,8 @@ function buildScorecardTable(forModal){
   let thead = '<thead><tr>'+cols.map(c=>`<th>${esc(String(c))}</th>`).join('')+'</tr></thead>';
   let rows = '';
   for(let i=0; i<scoreHistory.length; i++){
-    let par='-', yds='-';
-    if(selectedCourse && selectedCourse.holes[i]){
-      par = selectedCourse.holes[i].par;
-      yds = selectedCourse.holes[i].distance;
-    }
+    let par = holeParDist[i]?.par ?? '-';
+    let yds = holeParDist[i]?.dist || '-';
     let scores = scoreHistory[i];
     let minS = Math.min(...scores);
     let maxS = Math.max(...scores);
@@ -534,11 +542,12 @@ function saveGameResult(){
     history.push({
       id: Date.now(),
       game: 'matchplay',
+      course: document.getElementById('courseInput').value.trim() || '',
       date: new Date(document.getElementById('roundDate').value+'T12:00:00').toISOString(),
-      course: selectedCourse ? selectedCourse.name : 'Unknown Course',
       players: [...playerNames],
       totalHoles,
       scoreHistory: scoreHistory.map(h=>[...h]),
+      holeParDist: holeParDist.map(h=>({...h})),
       matchResults: matchups.map(m=>({
         p1: m.p1, p2: m.p2,
         holesUp: m.holesUp,

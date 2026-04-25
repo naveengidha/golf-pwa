@@ -19,7 +19,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#1f4d2b;margin:0;padding:
 .topnav-spacer{width:70px;}
 h2{text-align:center;margin-top:0;color:#ffd447;letter-spacing:.5px;}
 h3{text-align:center;margin-top:0;color:rgba(255,255,255,0.75);}
-.scroll-area{flex:1;overflow-y:auto;padding:20px 16px 40px;display:flex;justify-content:center;}
+.scroll-area{flex:1;overflow-y:auto;padding:20px 16px 40px;display:flex;justify-content:center;align-items:flex-start;}
 .container{
   background:
     repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px),
@@ -27,7 +27,7 @@ h3{text-align:center;margin-top:0;color:rgba(255,255,255,0.75);}
     #14281c;
   border:1px solid #b8962e;
   padding:24px 20px;border-radius:12px;width:100%;max-width:480px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative;display:flex;flex-direction:column;
 }
 .setup-player-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .name-input{flex:1;padding:10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);border-bottom:2px solid rgba(184,150,46,0.5);color:white;font-size:15px;background:rgba(0,0,0,0.3);}
@@ -42,14 +42,22 @@ button:hover,button:active{background:linear-gradient(135deg,#b8912e,#ffc93a,#b8
 button.btn-secondary{background:transparent;border:1px solid rgba(184,150,46,0.4);color:rgba(255,212,71,0.75);font-size:14px;padding:10px;box-shadow:none;letter-spacing:.5px;}
 button.btn-secondary:hover,button.btn-secondary:active{background:rgba(184,150,46,0.08);border-color:rgba(255,212,71,0.6);color:#ffd447;}
 .hidden{display:none!important;}
-.score-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-bottom:20px;}
+.score-row{display:grid;gap:12px;margin-bottom:20px;}
 .player-box{display:flex;flex-direction:column;align-items:center;}
 .player-box>label{font-size:12px;font-weight:bold;margin-bottom:6px;text-align:center;color:rgba(255,255,255,0.8);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;}
 .player-box>label.is-banker{color:#ffd447;}
 .player-box input[type=number]{padding:10px 4px;border-radius:6px;border:1px solid rgba(184,150,46,0.25);text-align:center;font-size:22px;font-weight:bold;width:80px;background:rgba(0,0,0,0.35);color:white;font-family:'Courier New',monospace;}
+.score-stepper{display:flex;align-items:center;gap:4px;margin-bottom:4px;}
+.score-btn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:17px;font-weight:bold;padding:0;margin:0;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:none;}
+.score-btn:hover,.score-btn:active{background:rgba(255,255,255,0.16);}
+.score-display{font-size:22px;font-weight:bold;color:#fff;min-width:28px;text-align:center;font-family:'Courier New',monospace;}
 .double-label{display:flex;align-items:center;gap:5px;font-size:12px;margin-top:6px;cursor:pointer;}
 .double-label input[type=checkbox]{transform:scale(1.3);}
 .player-wager{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:#1a1a0a;background:linear-gradient(135deg,#c9a227,#ffd447,#c9a227);border-radius:20px;padding:3px 10px;margin-top:5px;margin-bottom:3px;box-shadow:0 0 0 2px rgba(255,255,255,0.15), 0 2px 6px rgba(0,0,0,0.4);min-width:60px;text-align:center;}
+.wager-stepper{display:flex;align-items:center;gap:6px;margin-top:5px;margin-bottom:3px;}
+.wager-btn{width:26px;height:26px;border-radius:50%;background:rgba(255,212,71,0.12);border:1px solid rgba(255,212,71,0.4);color:#ffd447;font-size:16px;font-weight:bold;padding:0;margin:0;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:none;width:26px;}
+.wager-btn:hover,.wager-btn:active{background:rgba(255,212,71,0.25);}
+.wager-amount{font-size:14px;font-weight:bold;color:#ffd447;min-width:32px;text-align:center;}
 .results{margin-top:16px;background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;border:1px solid rgba(184,150,46,0.2);}
 .results h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,212,71,0.6);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(184,150,46,0.2);}
 .result-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:15px;}
@@ -69,6 +77,12 @@ td{font-family:'Courier New',monospace;}
 .settlement-box{background:rgba(0,0,0,0.35);border-radius:8px;padding:14px;margin-bottom:16px;border:1px solid rgba(184,150,46,0.3);border-top:3px solid #ffd447;}
 .settlement-box h3{margin:0 0 10px;font-size:13px;color:#ffd447;text-align:center;letter-spacing:1.5px;text-transform:uppercase;}
 .settle-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(184,150,46,0.15);margin-bottom:6px;font-size:14px;}
+.hole-info-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;}
+.par-btns{display:flex;align-items:center;gap:4px;}
+.par-btns-label{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:.5px;text-transform:uppercase;margin-right:2px;}
+.par-btn{width:34px;height:34px;padding:0;border-radius:6px;font-size:14px;font-weight:bold;background:rgba(0,0,0,0.25);border:1px solid rgba(184,150,46,0.3);color:rgba(255,255,255,0.5);box-shadow:none;margin:0;letter-spacing:0;}
+.par-btn.active{background:rgba(184,150,46,0.25);border-color:#ffd447;color:#ffd447;}
+.dist-input{width:72px;padding:7px 8px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);background:rgba(0,0,0,0.25);color:#fff;font-size:14px;text-align:center;}
 .settle-row:last-child{margin-bottom:0;}
 .settle-from{color:#ff7b7b;font-weight:bold;flex-shrink:0;}
 .settle-arrow{color:rgba(255,255,255,0.3);flex-shrink:0;}
@@ -131,6 +145,8 @@ td{font-family:'Courier New',monospace;}
 
         <div class="flip-front">
           <h2>New Game</h2>
+          <input class="course-input" id="courseInput" placeholder="Course name (optional)">
+          <input type="date" class="course-input" id="roundDate">
           <div id="playerRows">
             <div class="setup-player-row">
               <input class="name-input" id="name0" placeholder="Player 1">
@@ -139,13 +155,13 @@ td{font-family:'Courier New',monospace;}
               <input class="name-input" id="name1" placeholder="Player 2">
             </div>
             <div class="setup-player-row">
-              <input class="name-input" id="name2" placeholder="Player 3 (optional)">
+              <input class="name-input" id="name2" placeholder="Player 3">
             </div>
             <div class="setup-player-row">
-              <input class="name-input" id="name3" placeholder="Player 4 (optional)">
+              <input class="name-input" id="name3" placeholder="Player 4">
             </div>
           </div>
-          <div class="row-setting">
+          <div class="row-setting" style="margin-top:12px;">
             <label>Starting Banker:</label>
             <select id="startBankerSelect" class="select-input">
               <option value="0">Player 1</option>
@@ -155,8 +171,10 @@ td{font-family:'Courier New',monospace;}
             </select>
           </div>
           <div class="row-setting">
-            <label>Base Hole Value ($):</label>
-            <input type="number" id="holeBaseValue" value="5" min="1" inputmode="numeric" class="select-input">
+            <label>Hole Value ($):</label>
+            <input type="number" id="minValue" placeholder="1" min="1" inputmode="numeric" class="select-input" style="width:60px;">
+            <span style="color:rgba(255,255,255,0.4);font-size:13px;">to</span>
+            <input type="number" id="maxValue" placeholder="5" min="1" inputmode="numeric" class="select-input" style="width:60px;">
           </div>
           <div class="row-setting">
             <label>Holes:</label>
@@ -165,10 +183,9 @@ td{font-family:'Courier New',monospace;}
               <option value="18" selected>18</option>
             </select>
           </div>
-          <select class="course-input" id="courseSelect"></select>
-          <input type="date" class="course-input" id="roundDate">
           <button onclick="startGame()">Start Game</button>
           <div id="nameError">Enter at least 2 player names.</div>
+          <div style="margin-top:12px;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;padding-bottom:44px;">Tap <strong style="color:rgba(255,212,71,0.6);">i</strong> to view game rules</div>
         </div>
 
         <div class="flip-back">
@@ -195,21 +212,37 @@ td{font-family:'Courier New',monospace;}
   </div>
 
   <!-- GAME -->
-  <div id="gameScreen" class="hidden">
-    <h2>Hole <span id="holeLabel">1</span></h2>
-    <h3>Par <span id="parLabel">–</span> &nbsp;·&nbsp; <span id="distLabel">–</span> yds</h3>
-
-    <div id="scoreRow" class="score-row"></div>
-
-    <button onclick="resolveHole()">✓ Resolve Hole</button>
-    <div id="holeError" style="color:#ff6b6b;font-size:13px;margin:6px 0 0;display:none;"></div>
-    <br>
-    <div class="results">
-      <h3 style="margin-top:0;">Standings</h3>
-      <div id="standingsList"></div>
+  <div id="gameScreen" class="hidden" style="display:flex;flex-direction:column;min-height:100%;">
+    <div style="text-align:center;">
+      <span id="courseNameLabel" style="font-size:11px;color:rgba(255,212,71,0.5);letter-spacing:.5px;text-transform:uppercase;display:none;"></span>
+      <h2 style="margin-top:2px;">Hole <span id="holeLabel">1</span></h2>
     </div>
-    <br>
-    <button class="btn-secondary" onclick="toggleBankerScorecard()">📋 View Scorecard</button>
+    <div class="hole-info-row">
+      <div class="par-btns">
+        <span class="par-btns-label">Par</span>
+        <button type="button" class="par-btn" onclick="setPar(3)">3</button>
+        <button type="button" class="par-btn" onclick="setPar(4)">4</button>
+        <button type="button" class="par-btn" onclick="setPar(5)">5</button>
+      </div>
+      <input type="number" class="dist-input" id="distInput" inputmode="numeric" placeholder="Yds" min="1">
+    </div>
+
+    <div style="margin-top:28px;">
+      <div class="results">
+        <h3 style="margin-top:0;">Standings</h3>
+        <div id="standingsList"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;">
+      <button class="btn-secondary" onclick="toggleBankerScorecard()">📋 View Scorecard</button>
+    </div>
+
+    <div style="margin-top:32px;">
+      <div id="scoreRow" class="score-row" style="margin-bottom:20px;"></div>
+      <button onclick="resolveHole()">✓ Resolve Hole</button>
+      <div id="holeError" style="color:#ff6b6b;font-size:13px;margin:6px 0 0;display:none;"></div>
+    </div>
 
     <!-- Scorecard modal -->
     <div id="bankerScorecardModal" class="hidden modal">
@@ -290,26 +323,18 @@ function updateBankerDropdown(){
 
 let hole = 1;
 let totalHoles = 18;
+let courseName = '';
 let playerNames = [];
 let bankerIdx = 0;
-let baseValue = 5;
+let minValue = 1;
+let maxValue = 5;
+let holeBase = 5;
+let playerWagers = [];
+let playerScores = [];
 let carryovers = []; // per-player carryover vs the banker
 let playerNetTotals = [];
-let courses = [], selectedCourse = null;
+let currentPar = 4;
 let holeHistory = [];
-
-fetch('courses.json')
-  .then(r=>r.json())
-  .then(data=>{
-    courses = data.courses||[];
-    let sel = document.getElementById('courseSelect');
-    courses.forEach((c,i)=>{
-      let o = document.createElement('option'); o.value=i; o.textContent=c.name; sel.appendChild(o);
-    });
-  }).catch(()=>{
-    let sel = document.getElementById('courseSelect');
-    let o = document.createElement('option'); o.textContent='Course data unavailable'; o.value=''; sel.appendChild(o);
-  });
 
 function goBack(){
   if(holeHistory.length > 0 && !confirm('Abandon this round? Scores will be lost.')) return;
@@ -330,12 +355,14 @@ function startGame(){
 
   playerNetTotals = new Array(playerNames.length).fill(0);
   carryovers = new Array(playerNames.length).fill(0);
-  baseValue = Number(document.getElementById('holeBaseValue').value)||5;
+  minValue = Math.max(1, Number(document.getElementById('minValue').value)||1);
+  maxValue = Math.max(minValue, Number(document.getElementById('maxValue').value)||5);
+  holeBase = randBase();
+  courseName = document.getElementById('courseInput').value.trim();
   totalHoles = Number(document.getElementById('holesSelect').value)||18;
   carryover = 0;
 
-  let idx = document.getElementById('courseSelect').value;
-  if(idx !== '') selectedCourse = courses[idx];
+  currentPar = 4;
 
   document.getElementById('setupScreen').classList.add('hidden');
   document.getElementById('gameScreen').classList.remove('hidden');
@@ -345,29 +372,51 @@ function startGame(){
   renderStandings();
 }
 
+function randBase(){
+  return Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+}
+
+function setPar(p){
+  currentPar = p;
+  document.querySelectorAll('.par-btn').forEach(b=>b.classList.toggle('active', Number(b.textContent)===p));
+}
+
 function renderHoleInfo(){
+  holeBase = randBase();
+  playerWagers = playerNames.map((_,i) => i === bankerIdx ? 0 : minValue);
+  playerScores = playerNames.map(() => currentPar);
   document.getElementById('holeLabel').textContent = hole;
-  document.getElementById('topnavTitle').textContent = `The Banker — Hole ${hole}/${totalHoles}`;
-  if(selectedCourse && selectedCourse.holes && selectedCourse.holes[hole-1]){
-    let h = selectedCourse.holes[hole-1];
-    document.getElementById('parLabel').textContent = h.par;
-    document.getElementById('distLabel').textContent = h.distance;
-  } else {
-    document.getElementById('parLabel').textContent = '–';
-    document.getElementById('distLabel').textContent = '–';
-  }
+  document.getElementById('topnavTitle').textContent = `The Banker`;
+  let cnl = document.getElementById('courseNameLabel');
+  cnl.textContent = courseName; cnl.style.display = courseName ? '' : 'none';
+  document.querySelectorAll('.par-btn').forEach(b=>b.classList.toggle('active', Number(b.textContent)===currentPar));
+  document.getElementById('distInput').value = '';
 }
 
 function renderInputs(){
-  document.getElementById('scoreRow').innerHTML = playerNames.map((p,i)=>{
+  let cols = playerNames.length <= 3 ? playerNames.length : 2;
+  document.getElementById('scoreRow').style.gridTemplateColumns = `repeat(${cols},1fr)`;
+  let order = playerNames.map((_,i)=>i).filter(i=>i!==bankerIdx).concat(bankerIdx);
+  document.getElementById('scoreRow').innerHTML = order.map(i=>{
+    let p = playerNames[i];
     let isBanker = i === bankerIdx;
-    let doubleLabel = isBanker ? 'Double All' : 'Double';
+    let doubleLabel = 'Double';
     let wagerHtml = isBanker
-      ? `<div class="player-wager" style="color:rgba(255,255,255,0.4)">Banker</div>`
-      : `<div class="player-wager">Wager $<span id="wager${i}">${baseValue}</span></div>`;
+      ? `<div class="player-wager" style="color:#000;font-weight:bold;height:26px;margin-top:5px;margin-bottom:3px;display:flex;align-items:center;justify-content:center;">Banker</div>`
+      : `<div class="wager-stepper">
+           <button type="button" class="wager-btn" id="wbtn-minus-${i}" onclick="adjustWager(${i},-1)">−</button>
+           <span class="wager-amount">$<span id="wager${i}">${playerWagers[i]}</span></span>
+           <button type="button" class="wager-btn" id="wbtn-plus-${i}" onclick="adjustWager(${i},1)">+</button>
+         </div>`;
     return `<div class="player-box">
-      <label class="${isBanker?'is-banker':''}">${isBanker?'🏦 ':''}${esc(p)}</label>
-      <input type="number" inputmode="numeric" id="p${i}" placeholder="–">
+      <label class="${isBanker?'is-banker':''}">${esc(p)}</label>
+      <div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;">Score</div>
+      <div class="score-stepper">
+        <button type="button" class="score-btn" onclick="adjustScore(${i},-1)">−</button>
+        <span class="score-display" id="p${i}">${playerScores[i]}</span>
+        <button type="button" class="score-btn" onclick="adjustScore(${i},1)">+</button>
+      </div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.5px;text-transform:uppercase;margin-top:6px;">${isBanker?'&nbsp;':'Wager'}</div>
       ${wagerHtml}
       <label class="double-label">
         <input type="checkbox" id="d${i}" onchange="updateDisplays()">
@@ -377,11 +426,41 @@ function renderInputs(){
   }).join('');
 }
 
+function adjustScore(idx, delta){
+  playerScores[idx] = Math.max(1, playerScores[idx] + delta);
+  let el = document.getElementById('p'+idx);
+  if(el) el.textContent = playerScores[idx];
+}
+
+function adjustWager(idx, delta){
+  let bankerDoubled = document.getElementById('d'+bankerIdx)?.checked || false;
+  let playerDoubled = document.getElementById('d'+idx)?.checked || false;
+  if(bankerDoubled || playerDoubled) return;
+  playerWagers[idx] = Math.min(maxValue, Math.max(minValue, playerWagers[idx] + delta));
+  updateDisplays();
+  updateWagerButtons();
+}
+
+function updateWagerButtons(){
+  for(let i=0; i<playerNames.length; i++){
+    if(i === bankerIdx) continue;
+    let bankerDoubled = document.getElementById('d'+bankerIdx)?.checked || false;
+    let playerDoubled = document.getElementById('d'+i)?.checked || false;
+    let locked = bankerDoubled || playerDoubled;
+    let atMin = playerWagers[i] <= minValue;
+    let atMax = playerWagers[i] >= maxValue;
+    let btnMinus = document.getElementById('wbtn-minus-'+i);
+    let btnPlus  = document.getElementById('wbtn-plus-'+i);
+    if(btnMinus){ btnMinus.disabled = locked || atMin; btnMinus.style.opacity = (locked || atMin) ? '0.3' : '1'; }
+    if(btnPlus){  btnPlus.disabled  = locked || atMax; btnPlus.style.opacity  = (locked || atMax) ? '0.3' : '1'; }
+  }
+}
+
 function matchupValue(playerIdx){
   let bankerDoubled = document.getElementById('d'+bankerIdx)?.checked || false;
   let playerDoubled = document.getElementById('d'+playerIdx)?.checked || false;
   let doublesCount = (bankerDoubled ? 1 : 0) + (playerDoubled ? 1 : 0);
-  return baseValue * Math.pow(2, doublesCount) + (carryovers[playerIdx] || 0);
+  return playerWagers[playerIdx] * Math.pow(2, doublesCount) + (carryovers[playerIdx] || 0);
 }
 
 function updateDisplays(){
@@ -390,17 +469,13 @@ function updateDisplays(){
     let el = document.getElementById('wager'+i);
     if(el) el.textContent = matchupValue(i);
   }
+  updateWagerButtons();
 }
 
 function resolveHole(){
   document.getElementById('holeError').style.display='none';
-  let scores = [], doubles = [];
-  for(let i=0; i<playerNames.length; i++){
-    let v = Number(document.getElementById('p'+i).value);
-    if(!v){ document.getElementById('holeError').textContent='Please enter all scores.'; document.getElementById('holeError').style.display='block'; return; }
-    scores.push(v);
-    doubles.push(document.getElementById('d'+i).checked);
-  }
+  let scores = [...playerScores];
+  let doubles = playerNames.map((_,i) => document.getElementById('d'+i)?.checked || false);
 
   let bankerScore = scores[bankerIdx];
   let bankerDoubled = doubles[bankerIdx];
@@ -409,7 +484,7 @@ function resolveHole(){
   for(let i=0; i<playerNames.length; i++){
     if(i === bankerIdx) continue;
     let doublesCount = (bankerDoubled ? 1 : 0) + (doubles[i] ? 1 : 0);
-    let holeValue = baseValue * Math.pow(2, doublesCount) + carryovers[i];
+    let holeValue = playerWagers[i] * Math.pow(2, doublesCount) + carryovers[i];
     let result, amount = 0;
     if(scores[i] > bankerScore){
       result = 'banker'; amount = holeValue;
@@ -424,7 +499,7 @@ function resolveHole(){
     } else {
       result = 'tie'; amount = 0;
       // carry over this matchup's value (without the existing carryover to avoid double-counting)
-      carryovers[i] += baseValue * Math.pow(2, doublesCount);
+      carryovers[i] += playerWagers[i] * Math.pow(2, doublesCount);
     }
     matchups.push({playerIdx:i, holeValue, result, amount});
   }
@@ -454,6 +529,9 @@ function resolveHole(){
 
   holeHistory.push({
     holeNum: hole,
+    par: currentPar,
+    dist: document.getElementById('distInput').value || '',
+    holeBase,
     bankerIdx,
     scores: [...scores],
     doubles: [...doubles],
@@ -465,6 +543,7 @@ function resolveHole(){
 
   bankerIdx = nextBankerIdx;
   renderStandings();
+  if(!document.getElementById('bankerScorecardModal').classList.contains('hidden')) renderBankerScorecard();
 
   hole++;
   if(hole > totalHoles){ endGame(); return; }
@@ -472,10 +551,6 @@ function resolveHole(){
   renderHoleInfo();
   renderInputs();
   updateDisplays();
-  for(let i=0; i<playerNames.length; i++){
-    let el = document.getElementById('p'+i);
-    if(el) el.value = '';
-  }
 }
 
 function renderStandings(){
@@ -497,10 +572,10 @@ function saveGameResult(){
     history.push({
       id: Date.now(),
       game: 'banker',
+      course: document.getElementById('courseInput').value.trim() || '',
       date: new Date(document.getElementById('roundDate').value+'T12:00:00').toISOString(),
-      course: selectedCourse ? selectedCourse.name : 'Unknown Course',
       players: [...playerNames],
-      baseValue,
+      minValue, maxValue,
       playerNetTotals: [...playerNetTotals],
       holeHistory: holeHistory.map(h=>({...h, scores:[...h.scores], doubles:[...h.doubles], carryoversBefore:[...h.carryoversBefore], matchups:h.matchups.map(m=>({...m}))}))
     });
@@ -523,15 +598,12 @@ function endGame(){
   let tbody = document.getElementById('resultsBody');
   tbody.innerHTML = '';
   holeHistory.forEach(h=>{
-    let par='-', dist='-';
-    if(selectedCourse && selectedCourse.holes[h.holeNum-1]){
-      par = selectedCourse.holes[h.holeNum-1].par;
-      dist = selectedCourse.holes[h.holeNum-1].distance;
-    }
+    let par = h.par || '-', dist = h.dist || '-';
+    let winners = new Set(h.matchups.filter(m=>m.result==='player').map(m=>m.playerIdx));
     let row = `<tr><td>${h.holeNum}</td><td>${par}</td><td>${dist}</td>`;
     for(let p=0; p<playerNames.length; p++){
-      let isBanker = p === h.bankerIdx;
-      row += `<td class="${isBanker?'banker-cell':''}">${h.scores[p]}</td>`;
+      let cls = winners.has(p) ? 'sc-pos' : '';
+      row += `<td class="${cls}">${h.scores[p]}</td>`;
     }
     // result summary
     let resultParts = [];
@@ -610,45 +682,46 @@ function toggleBankerScorecard(){
 }
 
 function renderBankerScorecard(){
-  // Header: Hole | Par | Yds | [player scores] | Banker | Result
   let thead = document.getElementById('bankerScorecardHead');
   let tbody = document.getElementById('bankerScorecardBody');
   thead.innerHTML = '<th>#</th><th>Par</th><th>Yds</th>'
     + playerNames.map(n=>`<th>${esc(n)}</th>`).join('')
     + '<th>Banker</th><th>Result</th>';
-  tbody.innerHTML = '';
 
-  holeHistory.forEach(h=>{
-    let par='-', dist='-';
-    if(selectedCourse && selectedCourse.holes[h.holeNum-1]){
-      par = selectedCourse.holes[h.holeNum-1].par;
-      dist = selectedCourse.holes[h.holeNum-1].distance;
-    }
-    let row = `<tr>
-      <td>${h.holeNum}</td><td>${par}</td><td>${dist}</td>`;
-    for(let i=0; i<playerNames.length; i++){
-      let isBanker = i === h.bankerIdx;
-      row += `<td class="${isBanker?'sc-banker-cell':''}">${h.scores[i]}</td>`;
-    }
-    row += `<td class="sc-banker-cell">${esc(playerNames[h.bankerIdx])}</td>`;
+  let histMap = {};
+  holeHistory.forEach(h=>{ histMap[h.holeNum] = h; });
 
-    // Result: per-matchup outcome
-    let parts = [];
-    if(h.allTied){
-      parts.push('Carryover');
+  let rows = '';
+  for(let n = 1; n <= totalHoles; n++){
+    let h = histMap[n];
+    if(h){
+      let par = h.par || '–', dist = h.dist || '–';
+      let winners = new Set(h.matchups.filter(m=>m.result==='player').map(m=>m.playerIdx));
+      let row = `<tr><td>${n}</td><td>${par}</td><td>${dist}</td>`;
+      for(let i=0; i<playerNames.length; i++){
+        let cls = winners.has(i) ? 'sc-pos' : '';
+        row += `<td class="${cls}">${h.scores[i]}</td>`;
+      }
+      row += `<td class="sc-banker-cell">${esc(playerNames[h.bankerIdx])}</td>`;
+      let parts = [];
+      if(h.allTied){
+        parts.push('Carryover');
+      } else {
+        h.matchups.forEach(m=>{
+          if(m.result === 'banker')
+            parts.push(`<span class="sc-neg">${esc(playerNames[m.playerIdx])} -$${m.amount}</span>`);
+          else if(m.result === 'player')
+            parts.push(`<span class="sc-pos">${esc(playerNames[m.playerIdx])} +$${m.amount}</span>`);
+        });
+      }
+      row += `<td style="font-size:11px;text-align:center;min-width:80px">${parts.join('<br>')}</td></tr>`;
+      rows += row;
     } else {
-      h.matchups.forEach(m=>{
-        if(m.result === 'banker')
-          parts.push(`<span class="sc-neg">${esc(playerNames[m.playerIdx])} -$${m.amount}</span>`);
-        else if(m.result === 'player')
-          parts.push(`<span class="sc-pos">${esc(playerNames[m.playerIdx])} +$${m.amount}</span>`);
-      });
+      let emptyCells = playerNames.map(()=>'<td>–</td>').join('');
+      rows += `<tr style="opacity:0.35"><td>${n}</td><td>–</td><td>–</td>${emptyCells}<td>–</td><td>–</td></tr>`;
     }
-    row += `<td style="font-size:11px;text-align:left;min-width:80px">${parts.join('<br>')}</td></tr>`;
-    tbody.innerHTML += row;
-  });
+  }
 
-  // Totals row
   let totRow = '<tr style="font-weight:bold;background:#1c4729"><td colspan="3">Net</td>';
   for(let i=0; i<playerNames.length; i++){
     let v = playerNetTotals[i];
@@ -657,7 +730,8 @@ function renderBankerScorecard(){
     totRow += `<td class="${cls}">${sign}$${v}</td>`;
   }
   totRow += '<td colspan="2"></td></tr>';
-  tbody.innerHTML += totRow;
+
+  tbody.innerHTML = rows + totRow;
 }
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
