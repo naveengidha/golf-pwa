@@ -122,8 +122,7 @@ table.sc-table tr.sc-winner-row td{background:rgba(255,215,0,0.1);}
 <div class="tab-bar">
   <div class="tab active" id="tabF1" onclick="switchTab('f1')">🏎️ Grand Prix</div>
   <div class="tab" id="tabBanker" onclick="switchTab('banker')">🏦 The Banker</div>
-  <div class="tab" id="tabStableford" onclick="switchTab('stableford')">🎯 Stableford</div>
-  <div class="tab" id="tabMatchplay" onclick="switchTab('matchplay')">⚔️ Match Play</div>
+  <div class="tab" id="tabPractice" onclick="switchTab('practice')">🏌️ Regular Round</div>
 </div>
 
 <div class="scroll-area" id="scrollArea"></div>
@@ -161,8 +160,7 @@ function switchTab(game){
   document.body.dataset.game = game;
   document.getElementById('tabF1').classList.toggle('active', game==='f1');
   document.getElementById('tabBanker').classList.toggle('active', game==='banker');
-  document.getElementById('tabStableford').classList.toggle('active', game==='stableford');
-  document.getElementById('tabMatchplay').classList.toggle('active', game==='matchplay');
+  document.getElementById('tabPractice').classList.toggle('active', game==='practice');
   render();
 }
 
@@ -170,13 +168,11 @@ function render(){
   const area = document.getElementById('scrollArea');
   const all = loadHistory();
   const rounds = all.filter(r=>r.game===activeTab).reverse();
-  const gameName = {f1:'Grand Prix', banker:'The Banker', stableford:'Stableford', matchplay:'Match Play'}[activeTab];
+  const gameName = {f1:'Grand Prix', banker:'The Banker', practice:'Regular Round'}[activeTab];
 
   let standingsHtml = '';
-  if(activeTab === 'f1')         standingsHtml = renderStandingsPanelPoints(buildPointsStandings(all.filter(r=>r.game==='f1')), 'Grand Prix');
-  else if(activeTab === 'banker')     standingsHtml = renderStandingsPanelBanker(buildBankerStandings(all.filter(r=>r.game==='banker')));
-  else if(activeTab === 'stableford') standingsHtml = renderStandingsPanelPoints(buildPointsStandings(all.filter(r=>r.game==='stableford')), 'Stableford');
-  else if(activeTab === 'matchplay')  standingsHtml = renderStandingsPanelMatch(buildMatchPlayStandings(all.filter(r=>r.game==='matchplay')));
+  if(activeTab === 'f1')       standingsHtml = renderStandingsPanelPoints(buildPointsStandings(all.filter(r=>r.game==='f1')), 'Grand Prix');
+  else if(activeTab === 'banker') standingsHtml = renderStandingsPanelBanker(buildBankerStandings(all.filter(r=>r.game==='banker')));
 
   if(!rounds.length){
     area.innerHTML = standingsHtml + `<div class="empty-state">No ${gameName} rounds saved yet.<br>Finish a round to see results here.</div>`;
@@ -184,10 +180,8 @@ function render(){
   }
 
   const roundsHtml = `<div class="rounds-label">Rounds</div>` + rounds.map(r =>
-    activeTab==='f1'         ? renderF1Card(r)        :
-    activeTab==='banker'     ? renderBankerCard(r)     :
-    activeTab==='stableford' ? renderStablefordCard(r) :
-    activeTab==='matchplay'  ? renderMatchPlayCard(r)  : ''
+    activeTab==='f1'     ? renderF1Card(r)     :
+    activeTab==='banker' ? renderBankerCard(r) : ''
   ).join('');
 
   area.innerHTML = standingsHtml + roundsHtml;
@@ -400,166 +394,6 @@ function calcSettlement(players, nets){
   return transactions;
 }
 
-/* ── STABLEFORD CARD ── */
-function renderStablefordCard(r){
-  let date = new Date(r.date).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-
-  let sorted = r.players.map((name,i)=>({name, pts:r.playerTotals[i]}))
-    .sort((a,b)=>b.pts-a.pts);
-  let winner = sorted[0];
-
-  let lbHtml = sorted.map((p,rank)=>`
-    <div class="lb-row ${rank===0?'lb-winner':''}">
-      <span class="lb-name">${rank===0?'🏆 ':''}${esc(p.name)}</span>
-      <span class="lb-score">${p.pts} pts</span>
-    </div>`).join('');
-
-  let scHead = `<th>#</th><th>Par</th><th>Yds</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
-  let scRows = '';
-  for(let h=0; h<r.scoreHistory.length; h++){
-    let scores = r.scoreHistory[h];
-    let pts = r.pointHistory[h];
-    let par = r.holeParDist?.[h]?.par ?? '-';
-    let yds = r.holeParDist?.[h]?.dist || '-';
-    scRows += `<tr>
-      <td>${h+1}</td><td>${par}</td><td>${yds}</td>
-      ${scores.map((s,i)=>{
-        let p = pts[i];
-        let cls = p>=2?' class="tag-good"':p===0?' class="tag-bad"':'';
-        return `<td${cls}>${s}<br><small style="opacity:.6">${p}pt</small></td>`;
-      }).join('')}
-    </tr>`;
-  }
-  scRows += `<tr style="font-weight:bold;background:var(--bg-cell)">
-    <td colspan="3">Total</td>
-    ${r.playerTotals.map(t=>`<td>${t} pts</td>`).join('')}
-  </tr>`;
-
-  return `<div class="round-card" id="card-${r.id}">
-    <div class="round-card-header" onclick="toggleCard(${r.id})">
-      <div class="rch-left">
-        <div class="rch-date">${date}${r.course ? ` &nbsp;·&nbsp; ${esc(r.course)}` : ''}</div>
-        <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')}</div>
-      </div>
-      <div class="rch-result black-win">🏆 ${esc(winner.name)}<br>${winner.pts} pts</div>
-      <button class="rch-del" onclick="deleteRound(event,${r.id})" title="Delete">✕</button>
-      <div class="rch-chevron">›</div>
-    </div>
-    <div class="round-detail">
-      <div class="detail-section">
-        <h5>Final Standings</h5>
-        <div class="leaderboard">${lbHtml}</div>
-      </div>
-      <div class="detail-section">
-        <h5>Scorecard</h5>
-        <div class="sc-wrap">
-          <table class="sc-table">
-            <thead><tr>${scHead}</tr></thead>
-            <tbody>${scRows}</tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-/* ── MATCH PLAY CARD ── */
-function computeMatchPlayStandings(r){
-  return r.players.map((name, idx)=>{
-    let won=0, lost=0, halved=0, holesUp=0;
-    r.matchResults.forEach(m=>{
-      if(m.p1 !== idx && m.p2 !== idx) return;
-      let isP1 = m.p1 === idx;
-      if(m.status === 'p1'){
-        if(isP1){ won++; holesUp += m.holesUp; }
-        else { lost++; holesUp -= m.holesUp; }
-      } else if(m.status === 'p2'){
-        if(!isP1){ won++; holesUp += Math.abs(m.holesUp); }
-        else { lost++; holesUp -= Math.abs(m.holesUp); }
-      } else if(m.status === 'halved'){
-        halved++;
-      }
-    });
-    return {idx, name, won, lost, halved, holesUp};
-  }).sort((a,b)=> b.won - a.won || b.holesUp - a.holesUp);
-}
-
-function formatMatchResultFromRecord(m, totalHoles){
-  let lead = Math.abs(m.holesUp);
-  if(m.status === 'halved') return 'A/S';
-  if(!m.closedAt) return lead + ' up';
-  let holesRemaining = totalHoles - m.closedAt;
-  if(holesRemaining === 0) return lead + ' up';
-  return lead + '&' + holesRemaining;
-}
-
-function renderMatchPlayCard(r){
-  let date = new Date(r.date).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  let standings = computeMatchPlayStandings(r);
-  let winner = standings[0];
-
-  let lbHtml = standings.map((p,rank)=>{
-    let record = p.won + 'W ' + p.lost + 'L' + (p.halved ? ' ' + p.halved + 'H' : '');
-    return `<div class="lb-row ${rank===0?'lb-winner':''}">
-      <span class="lb-name">${rank===0?'🏆 ':''}${esc(p.name)}</span>
-      <span class="lb-score">${record}</span>
-    </div>`;
-  }).join('');
-
-  let duelHtml = (r.matchResults||[]).map(m=>{
-    let p1n = esc(r.players[m.p1]), p2n = esc(r.players[m.p2]);
-    let res = formatMatchResultFromRecord(m, r.totalHoles||18);
-    let text;
-    if(m.status === 'halved') text = p1n + ' halved ' + p2n + ' — A/S';
-    else {
-      let wn = m.status==='p1' ? p1n : p2n;
-      let ln = m.status==='p1' ? p2n : p1n;
-      text = wn + ' def. ' + ln + ' — ' + res;
-    }
-    return `<div style="font-size:13px;padding:4px 0;color:rgba(255,255,255,0.75);">${text}</div>`;
-  }).join('');
-
-  let scHead = `<th>#</th><th>Par</th><th>Yds</th>${r.players.map(n=>`<th>${esc(n)}</th>`).join('')}`;
-  let scRows = (r.scoreHistory||[]).map((scores,h)=>{
-    let par = r.holeParDist?.[h]?.par ?? '-';
-    let yds = r.holeParDist?.[h]?.dist || '-';
-    return `<tr><td>${h+1}</td><td>${par}</td><td>${yds}</td>${scores.map(s=>`<td>${s}</td>`).join('')}</tr>`;
-  }).join('');
-
-  let winRecord = winner.won + 'W ' + winner.lost + 'L' + (winner.halved ? ' ' + winner.halved + 'H' : '');
-
-  return `<div class="round-card" id="card-${r.id}">
-    <div class="round-card-header" onclick="toggleCard(${r.id})">
-      <div class="rch-left">
-        <div class="rch-date">${date}${r.course ? ` &nbsp;·&nbsp; ${esc(r.course)}` : ''}</div>
-        <div class="rch-summary">${r.players.map(n=>esc(n)).join(' · ')}</div>
-      </div>
-      <div class="rch-result black-win">🏆 ${esc(winner.name)}<br>${winRecord}</div>
-      <button class="rch-del" onclick="deleteRound(event,${r.id})" title="Delete">✕</button>
-      <div class="rch-chevron">›</div>
-    </div>
-    <div class="round-detail">
-      <div class="detail-section">
-        <h5>Final Standings</h5>
-        <div class="leaderboard">${lbHtml}</div>
-      </div>
-      <div class="detail-section">
-        <h5>Duel Results</h5>
-        ${duelHtml}
-      </div>
-      <div class="detail-section">
-        <h5>Scorecard</h5>
-        <div class="sc-wrap">
-          <table class="sc-table">
-            <thead><tr>${scHead}</tr></thead>
-            <tbody>${scRows}</tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
 /* ── STANDINGS PANELS ── */
 function stnRankCls(i){ return i===0?'r1':i===1?'r2':i===2?'r3':''; }
 
@@ -593,33 +427,6 @@ function buildBankerStandings(rounds){
     });
   }
   return Object.values(players).sort((a,b)=>b.netBalance-a.netBalance);
-}
-
-function buildMatchPlayStandings(rounds){
-  const players = {};
-  const roundsForPlayer = {};
-  for(const r of rounds){
-    if(!r.players || !r.matchResults) continue;
-    for(const m of r.matchResults){
-      const p1Name = r.players[m.p1], p2Name = r.players[m.p2];
-      if(!p1Name || !p2Name) continue;
-      [p1Name, p2Name].forEach(name=>{
-        if(!players[name]) players[name] = {name, wins:0, losses:0, halved:0};
-        if(!roundsForPlayer[name]) roundsForPlayer[name] = new Set();
-        roundsForPlayer[name].add(r.id);
-      });
-      if(m.status==='halved'){ players[p1Name].halved++; players[p2Name].halved++; }
-      else if(m.status==='p1'){ players[p1Name].wins++; players[p2Name].losses++; }
-      else if(m.status==='p2'){ players[p2Name].wins++; players[p1Name].losses++; }
-    }
-  }
-  return Object.values(players).map(p=>({
-    ...p,
-    rounds: roundsForPlayer[p.name] ? roundsForPlayer[p.name].size : 0,
-    total: p.wins+p.losses+p.halved,
-    winPct: p.wins+p.losses+p.halved > 0
-      ? Math.round((p.wins+p.halved*0.5)/(p.wins+p.losses+p.halved)*100) : 0
-  })).sort((a,b)=>b.wins-a.wins||b.halved-a.halved||a.losses-b.losses);
 }
 
 function renderStandingsPanelPoints(rows, label){
@@ -665,28 +472,6 @@ function renderStandingsPanelBanker(rows){
       <td class="num">${p.wins}</td>
     </tr>`;
   }).join('');
-  return `<div class="stn-panel">
-    <div class="stn-panel-title">All-Time Standings</div>
-    <table class="stn-table">${thead}<tbody>${tbody}</tbody></table>
-  </div>`;
-}
-
-function renderStandingsPanelMatch(rows){
-  if(!rows.length) return '';
-  const thead = `<thead><tr>
-    <th class="stn-rank">#</th><th>Player</th>
-    <th class="num">Rnds</th><th class="num">W</th><th class="num">L</th>
-    <th class="num">H</th><th class="num">Win%</th>
-  </tr></thead>`;
-  const tbody = rows.map((p,i)=>`<tr>
-    <td class="stn-rank ${stnRankCls(i)}">${i+1}</td>
-    <td class="stn-name${i===0?' leader':''}">${esc(p.name)}</td>
-    <td class="num">${p.rounds}</td>
-    <td class="num">${p.wins}</td>
-    <td class="num">${p.losses}</td>
-    <td class="num">${p.halved}</td>
-    <td class="num"><span class="stn-pct">${p.winPct}%</span></td>
-  </tr>`).join('');
   return `<div class="stn-panel">
     <div class="stn-panel-title">All-Time Standings</div>
     <table class="stn-table">${thead}<tbody>${tbody}</tbody></table>

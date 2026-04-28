@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sandbox — Sticks & Stones</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#1f4d2b;color:#fff;min-height:100vh;display:flex;flex-direction:column;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ── Top nav ── */
+.topnav{display:flex;align-items:center;padding:12px 14px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(184,150,46,0.2);position:sticky;top:0;z-index:50;flex-shrink:0;}
+.back-btn{background:none;border:none;color:rgba(255,212,71,0.8);font-size:15px;padding:4px 8px 4px 0;letter-spacing:.3px;}
+.topnav-title{flex:1;text-align:center;font-size:14px;font-weight:bold;letter-spacing:1px;color:rgba(255,255,255,0.7);text-transform:uppercase;}
+.topnav-spacer{width:48px;}
+
+/* ── Scroll area ── */
+.scroll-area{flex:1;overflow-y:auto;padding:20px 14px 40px;display:flex;justify-content:center;align-items:flex-start;}
+
+/* ── Container ── */
+.container{width:100%;max-width:480px;}
+
+/* ── Global button reset (scoped overrides below) ── */
+button{width:auto;padding:0;border:none;border-radius:0;font-size:inherit;font-weight:inherit;background:none;box-shadow:none;margin:0;letter-spacing:normal;}
+
+/* ── Setup card ── */
+.setup-card{
+  background:
+    repeating-linear-gradient(45deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 8px),
+    repeating-linear-gradient(-45deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 8px),
+    #1e4d1e;
+  border-radius:16px;
+  border:1px solid rgba(184,150,46,0.2);
+  box-shadow:0 4px 24px rgba(0,0,0,0.4);
+  padding:24px 20px 32px;
+  position:relative;
+}
+.setup-card h2{text-align:center;color:#ffd447;font-size:18px;letter-spacing:.5px;margin-bottom:20px;}
+.setup-player-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.name-input{flex:1;padding:10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);border-bottom:2px solid rgba(184,150,46,0.5);color:#fff;font-size:15px;background:rgba(0,0,0,0.3);font-family:inherit;}
+.name-input::placeholder{color:rgba(255,255,255,0.35);}
+.course-input{width:100%;margin-bottom:12px;padding:10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);font-size:15px;background:rgba(0,0,0,0.3);color:#fff;font-family:inherit;}
+.course-input::placeholder{color:rgba(255,255,255,0.35);}
+.row-setting{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.row-setting label{font-size:12px;white-space:nowrap;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.5px;}
+.select-input{padding:8px 10px;border-radius:6px;border:1px solid rgba(184,150,46,0.3);font-size:15px;background:rgba(0,0,0,0.3);color:#fff;font-family:inherit;}
+.start-btn{width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-weight:bold;background:linear-gradient(135deg,#c9a227,#ffd447,#c9a227);color:#1a1a0a;cursor:pointer;margin-top:4px;box-shadow:0 2px 8px rgba(184,150,46,0.4);letter-spacing:.5px;}
+.start-btn:active{opacity:.85;}
+#nameError{color:#ff6b6b;font-size:13px;display:none;margin-top:4px;}
+.flip-card{width:100%;}
+.flip-inner{position:relative;transform-style:preserve-3d;transition:transform 0.45s ease;}
+.flip-inner.flipped{transform:rotateY(180deg);}
+.flip-front{position:relative;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.flip-back{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  transform:rotateY(180deg);
+  background:
+    repeating-linear-gradient(45deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 8px),
+    repeating-linear-gradient(-45deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 8px),
+    #1e4d1e;
+  border:1px solid rgba(255,255,255,0.07);
+  padding:24px 20px;border-radius:12px;
+}
+.flip-inner.flipped .flip-front{position:absolute;inset:0;}
+.flip-inner.flipped .flip-back{position:relative;inset:auto;}
+.flip-btn{position:absolute;bottom:14px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(255,212,71,0.12);border:1px solid rgba(255,212,71,0.35);color:#ffd447;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;z-index:10;box-shadow:none;}
+.flip-btn:active{background:rgba(255,212,71,0.25);}
+.flip-back-btn{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);font-size:13px;font-weight:bold;padding:6px 14px;border-radius:4px;cursor:pointer;width:auto;margin-bottom:20px;letter-spacing:.5px;text-transform:none;box-shadow:none;}
+.flip-back-btn:active{background:rgba(255,255,255,0.07);color:#fff;}
+.rules-title{font-size:18px;font-weight:bold;color:#ffd447;text-align:center;margin:0 0 6px;letter-spacing:1px;}
+.rules-sub{text-align:center;color:rgba(255,255,255,0.5);font-size:12px;margin:0 0 20px;letter-spacing:1px;text-transform:uppercase;}
+.rules-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.rules-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:14px;}
+.rules-table td:first-child{color:rgba(255,255,255,0.5);width:55%;}
+.rules-table td:last-child{font-weight:bold;font-family:'Courier New',monospace;color:#ffd447;}
+.rules-note{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;text-align:center;margin-top:4px;}
+
+/* ── Table felt ── */
+.table-felt{
+  background:
+    repeating-linear-gradient(45deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 8px),
+    repeating-linear-gradient(-45deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 8px),
+    #1a5c2a;
+  border-radius:20px;
+  border:3px solid #8B6914;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,212,71,0.1);
+  padding:0 0 20px;
+  overflow:hidden;
+  position:relative;
+}
+/* felt arc that mimics a BJ table's curved playing surface */
+.table-felt::before{
+  content:'';
+  position:absolute;
+  top:0;left:-20%;right:-20%;
+  height:56%;
+  background:rgba(0,0,0,0.15);
+  border-radius:0 0 60% 60%;
+  pointer-events:none;
+}
+
+/* ── Hole info bar ── */
+.hole-info-bar{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:10px 14px;
+  background:rgba(0,0,0,0.35);
+  border-bottom:2px solid #8B6914;
+  position:relative;z-index:1;
+}
+.hole-label-wrap{text-align:center;}
+.course-name-lbl{font-size:10px;color:rgba(255,212,71,0.5);letter-spacing:.5px;text-transform:uppercase;display:none;}
+.hole-label{font-size:15px;font-weight:bold;color:#ffd447;letter-spacing:.5px;}
+.par-btns{display:flex;align-items:center;gap:3px;}
+.par-btns-label{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:.5px;text-transform:uppercase;margin-right:2px;}
+.par-btn{width:28px;height:28px;padding:0;border-radius:5px;font-size:13px;font-weight:bold;background:rgba(0,0,0,0.25);border:1px solid rgba(184,150,46,0.3);color:rgba(255,255,255,0.5);letter-spacing:0;}
+.par-btn.active{background:rgba(184,150,46,0.25);border-color:#ffd447;color:#ffd447;}
+.dist-input{width:60px;padding:5px 6px;border-radius:5px;border:1px solid rgba(184,150,46,0.3);background:rgba(0,0,0,0.25);color:#fff;font-size:13px;text-align:center;font-family:inherit;}
+
+/* ── Dealer zone ── */
+.dealer-zone{
+  padding:18px 14px 20px;
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;z-index:1;
+}
+/* casino-style printed text on the felt */
+.dealer-badge{
+  font-size:8px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,212,71,0.4);margin-bottom:10px;
+  border:1px solid rgba(255,212,71,0.2);
+  border-radius:20px;padding:2px 12px;
+}
+/* dealer "tray" — the inset placard area */
+.dealer-card{
+  background:rgba(0,0,0,0.45);
+  border:2px solid rgba(255,212,71,0.5);
+  border-radius:14px;
+  padding:14px 24px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  min-width:160px;
+  box-shadow:0 0 20px rgba(255,212,71,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+  position:relative;
+}
+.dealer-card::after{
+  content:'BANKER';
+  position:absolute;bottom:-10px;
+  font-size:8px;font-weight:bold;letter-spacing:2px;color:#000;
+  background:linear-gradient(135deg,#c9a227,#ffd447,#c9a227);
+  padding:2px 14px;border-radius:20px;
+}
+.dealer-name{font-size:16px;font-weight:bold;color:#ffd447;letter-spacing:.5px;text-transform:uppercase;}
+.dealer-role{display:none;}/* replaced by ::after placard */
+.input-lbl{font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:.5px;text-transform:uppercase;margin-top:4px;}
+
+/* ── Shared stepper ── */
+.stepper{display:flex;align-items:center;gap:4px;}
+.step-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#fff;font-size:16px;font-weight:bold;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:none;}
+.step-btn:active{background:rgba(255,255,255,0.18);}
+.step-val{font-size:20px;font-weight:bold;font-family:'Courier New',monospace;min-width:24px;text-align:center;}
+
+/* ── Double — casino-style toggle button ── */
+.double-label{
+  display:flex;align-items:center;justify-content:center;
+  margin-top:6px;cursor:pointer;
+}
+.double-label input{display:none;}
+.double-pill{
+  font-size:10px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;
+  padding:4px 14px;border-radius:20px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.18);
+  color:rgba(255,255,255,0.4);
+  transition:background .2s,border-color .2s,color .2s;
+  user-select:none;
+}
+.double-label input:checked + .double-pill{
+  background:linear-gradient(135deg,#c9a227,#ffd447,#c9a227);
+  border-color:#ffd447;
+  color:#1a1a0a;
+  box-shadow:0 0 10px rgba(255,212,71,0.4);
+}
+
+/* ── Table arc divider ── */
+.table-arc{
+  position:relative;z-index:1;
+  margin:4px 0 0;
+  display:flex;align-items:center;
+  padding:0 14px;
+  height:28px;
+}
+.table-arc::before{
+  content:'';
+  position:absolute;left:10px;right:10px;top:50%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,212,71,0.5) 20%,rgba(255,212,71,0.5) 80%,transparent);
+}
+.table-arc-label{
+  position:relative;z-index:1;
+  margin:0 auto;
+  font-size:8px;color:rgba(255,212,71,0.5);letter-spacing:2px;text-transform:uppercase;
+  background:rgba(26,92,42,0.9);
+  padding:2px 10px;
+  border-radius:10px;
+  border:1px solid rgba(255,212,71,0.25);
+}
+
+/* ── Players zone ── */
+.players-zone{
+  padding:16px 10px 4px;
+  display:flex;flex-wrap:wrap;gap:12px;justify-content:center;
+  position:relative;z-index:1;
+}
+/* each player "spot" on the felt */
+.player-card{
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  flex:1;min-width:100px;max-width:140px;
+  position:relative;
+}
+/* the felt betting circle */
+.player-card::before{
+  content:'';
+  position:absolute;
+  inset:-8px;
+  border-radius:14px;
+  border:1px dashed rgba(255,212,71,0.2);
+  pointer-events:none;
+}
+.player-name{font-size:11px;font-weight:bold;color:rgba(255,255,255,0.85);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:4px;}
+.player-balance{font-size:10px;font-family:'Courier New',monospace;font-weight:bold;margin-bottom:6px;letter-spacing:.3px;}
+.player-balance.pos{color:#ffd447;}
+.player-balance.neg{color:#ff6b6b;}
+.player-balance.zero{color:rgba(255,255,255,0.3);}
+
+/* score area */
+.player-score-area{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:rgba(0,0,0,0.3);
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.07);
+  padding:6px 10px;
+  width:100%;
+  margin-bottom:8px;
+}
+
+/* ── Wager input (Bond / Casino Royale) ── */
+.wager-chip-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:100%;
+}
+.wager-chip-label{
+  font-size:7px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,212,71,0.4);
+}
+.wager-stepper{
+  display:flex;align-items:center;gap:0;
+  background:rgba(0,0,0,0.55);
+  border:1px solid rgba(255,212,71,0.45);
+  border-radius:6px;
+  overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.wager-step-btn{
+  width:28px;height:36px;
+  background:rgba(255,212,71,0.07);
+  border:none;
+  border-radius:0;
+  color:rgba(255,212,71,0.7);
+  font-size:18px;font-weight:bold;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;
+  transition:background .12s,color .12s;
+  flex-shrink:0;
+}
+.wager-step-btn:active{background:rgba(255,212,71,0.2);color:#ffd447;}
+.wager-step-btn.left{border-right:1px solid rgba(255,212,71,0.2);}
+.wager-step-btn.right{border-left:1px solid rgba(255,212,71,0.2);}
+.wager-stepper.doubled .wager-step-btn{
+  opacity:0.25;pointer-events:none;cursor:default;
+}
+.wager-val-display{
+  min-width:42px;
+  text-align:center;
+  font-family:'Courier New',monospace;
+  font-size:16px;font-weight:bold;
+  color:#ffd447;
+  letter-spacing:.5px;
+  padding:0 4px;
+  line-height:36px;
+  text-shadow:0 0 10px rgba(255,212,71,0.4);
+  position:relative;
+}
+.wager-val-display::before{
+  content:'♠';
+  position:absolute;
+  font-size:28px;
+  color:rgba(255,212,71,0.04);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+
+/* ── Resolve / action row ── */
+.resolve-row{padding:16px 14px 0;display:flex;flex-direction:column;align-items:stretch;gap:8px;}
+.resolve-btn{background:linear-gradient(135deg,#c9a227,#ffd447);color:#1a1a0a;font-size:15px;font-weight:bold;border:none;border-radius:10px;padding:14px;letter-spacing:.5px;width:100%;}
+.resolve-btn:active{opacity:.85;}
+.secondary-btn{background:transparent;border:1px solid rgba(184,150,46,0.4);color:rgba(255,212,71,0.75);font-size:14px;font-weight:bold;padding:10px;border-radius:8px;width:100%;letter-spacing:.5px;}
+.secondary-btn:active{background:rgba(184,150,46,0.08);color:#ffd447;}
+#holeError{color:#ff6b6b;font-size:13px;display:none;text-align:center;}
+
+/* ── Modal ── */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:1000;}
+.modal-content{background:#14281c;border:1px solid rgba(184,150,46,0.5);width:92%;max-width:620px;max-height:88vh;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+.modal-header{background:rgba(0,0,0,0.4);border-bottom:1px solid rgba(184,150,46,0.3);display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-weight:bold;font-size:15px;letter-spacing:.5px;color:#ffd447;}
+.modal-body{overflow-y:auto;padding:10px;}
+.close-btn{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;width:auto;padding:0 4px;}
+table{width:100%;border-collapse:collapse;margin-top:6px;}
+th,td{border:1px solid rgba(184,150,46,0.2);padding:5px 4px;text-align:center;font-size:12px;}
+thead th{background:rgba(0,0,0,0.4);color:#ffd447;letter-spacing:.5px;text-transform:uppercase;font-size:10px;}
+td{font-family:'Courier New',monospace;}
+.sc-banker-cell{background:rgba(255,212,71,0.12);color:#ffd447;font-weight:bold;}
+.sc-pos{color:#5ee87b;font-weight:bold;}
+.sc-neg{color:#ff7b7b;font-weight:bold;}
+.sc-result-col{font-size:11px;text-align:center;padding:4px 6px;}
+
+/* ── Final screen ── */
+.final-wrap{
+  background:
+    repeating-linear-gradient(45deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 8px),
+    repeating-linear-gradient(-45deg,rgba(0,0,0,0.07) 0,rgba(0,0,0,0.07) 1px,transparent 1px,transparent 8px),
+    #1e4d1e;
+  border-radius:16px;
+  border:1px solid rgba(184,150,46,0.2);
+  box-shadow:0 4px 24px rgba(0,0,0,0.4);
+  padding:24px 16px 28px;
+}
+.final-wrap h2{text-align:center;color:#ffd447;font-size:18px;margin-bottom:20px;letter-spacing:.5px;}
+.settlement-box{background:rgba(0,0,0,0.35);border-radius:8px;padding:14px;margin:16px 0;border:1px solid rgba(184,150,46,0.3);border-top:3px solid #ffd447;}
+.settlement-box h3{margin:0 0 10px;font-size:13px;color:#ffd447;text-align:center;letter-spacing:1.5px;text-transform:uppercase;}
+.settle-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(184,150,46,0.15);margin-bottom:6px;font-size:14px;}
+.settle-row:last-child{margin-bottom:0;}
+.settle-from{color:#ff7b7b;font-weight:bold;flex-shrink:0;}
+.settle-arrow{color:rgba(255,255,255,0.3);flex-shrink:0;}
+.settle-to{color:#5ee87b;font-weight:bold;flex-shrink:0;}
+.settle-amount{margin-left:auto;font-weight:bold;color:#ffd447;font-size:15px;flex-shrink:0;}
+.settle-all-square{text-align:center;color:rgba(255,255,255,0.4);font-size:14px;padding:8px 0;}
+.net-table td.pos{color:#5ee87b;font-weight:bold;}
+.net-table td.neg{color:#ff7b7b;font-weight:bold;}
+.net-table td.zero{color:rgba(255,255,255,0.4);}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <button class="back-btn" onclick="goBack()">‹ Menu</button>
+  <div class="topnav-title">The Banker</div>
+  <div class="topnav-spacer"></div>
+</div>
+
+<div class="scroll-area">
+<div class="container">
+
+  <!-- ══ SETUP ══ -->
+  <div id="setupScreen">
+    <div class="setup-card">
+      <div class="flip-card">
+        <div class="flip-inner" id="setupFlip">
+
+          <div class="flip-front">
+            <h2>New Game</h2>
+            <input class="course-input" id="courseInput" placeholder="Course name (optional)">
+            <input type="date" class="course-input" id="roundDate">
+            <div id="playerRows">
+              <div class="setup-player-row"><input class="name-input" id="name0" placeholder="Player 1"></div>
+              <div class="setup-player-row"><input class="name-input" id="name1" placeholder="Player 2"></div>
+              <div class="setup-player-row"><input class="name-input" id="name2" placeholder="Player 3"></div>
+              <div class="setup-player-row"><input class="name-input" id="name3" placeholder="Player 4"></div>
+            </div>
+            <div class="row-setting" style="margin-top:12px;">
+              <label>Starting Banker:</label>
+              <select id="startBankerSelect" class="select-input">
+                <option value="0">Player 1</option>
+                <option value="1">Player 2</option>
+                <option value="2">Player 3</option>
+                <option value="3">Player 4</option>
+              </select>
+            </div>
+            <div class="row-setting">
+              <label>Hole Value ($):</label>
+              <input type="number" id="minValue" value="1" min="1" inputmode="numeric" class="select-input" style="width:60px;">
+              <span style="color:rgba(255,255,255,0.4);font-size:13px;">to</span>
+              <input type="number" id="maxValue" value="5" min="1" inputmode="numeric" class="select-input" style="width:60px;">
+            </div>
+            <div class="row-setting">
+              <label>Holes:</label>
+              <select id="holesSelect" class="select-input">
+                <option value="9">9</option>
+                <option value="18" selected>18</option>
+              </select>
+            </div>
+            <button class="start-btn" onclick="startGame()">Start Game</button>
+            <div id="nameError">Enter at least 2 player names.</div>
+            <div style="margin-top:12px;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;padding-bottom:44px;">Tap <strong style="color:rgba(255,212,71,0.6);">i</strong> to view game rules</div>
+          </div>
+
+          <div class="flip-back">
+            <button class="flip-back-btn" onclick="flipCard('setupFlip')">‹ Back</button>
+            <div class="rules-title">🏦 The Banker</div>
+            <div class="rules-sub">2–4 players · one banker per hole</div>
+            <table class="rules-table">
+              <tr><td>Banker</td><td>One player per hole faces all others</td></tr>
+              <tr><td>Base value</td><td>Set before the round starts</td></tr>
+              <tr><td>Double</td><td>Either player can double before scoring</td></tr>
+              <tr><td>Win</td><td>Lower score takes the hole value</td></tr>
+              <tr><td>Tie</td><td>Value carries over to the next hole</td></tr>
+              <tr><td>New banker</td><td>Player who beats the banker with the lowest score</td></tr>
+            </table>
+            <div class="rules-note">
+              Each matchup is banker vs. one player — settled hole by hole.<br>
+              Highest net total wins the round.
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <button class="flip-btn" onclick="flipCard('setupFlip')" title="How to play">i</button>
+    </div>
+  </div>
+
+  <!-- ══ GAME ══ -->
+  <div id="gameScreen" class="hidden">
+    <div class="table-felt">
+
+      <!-- Hole info bar -->
+      <div class="hole-info-bar">
+        <div class="hole-label-wrap">
+          <div class="course-name-lbl" id="courseNameLabel"></div>
+          <div class="hole-label">Hole <span id="holeLabel">1</span></div>
+        </div>
+        <div class="par-btns">
+          <span class="par-btns-label">Par</span>
+          <button type="button" class="par-btn" onclick="setPar(3)">3</button>
+          <button type="button" class="par-btn" onclick="setPar(4)">4</button>
+          <button type="button" class="par-btn" onclick="setPar(5)">5</button>
+        </div>
+        <input class="dist-input" type="number" id="distInput" inputmode="numeric" placeholder="Yds">
+      </div>
+
+      <!-- Dealer / Banker -->
+      <div class="dealer-zone">
+        <div class="dealer-badge">Dealer Area</div>
+        <div class="dealer-card" id="dealerCard">
+          <div class="dealer-name" id="dealerName"></div>
+          <div class="player-balance zero" id="dealerBal">$0</div>
+          <div class="input-lbl">Score</div>
+          <div class="stepper">
+            <button class="step-btn" id="dealerMinus" onclick="adjustScore(-1,-1)">−</button>
+            <span class="step-val" id="dealerScoreVal">4</span>
+            <button class="step-btn" id="dealerPlus" onclick="adjustScore(-1,1)">+</button>
+          </div>
+          <label class="double-label" style="margin-top:8px;">
+            <input type="checkbox" id="dealerDouble" onchange="applyDouble(-1)">
+            <span class="double-pill">Double</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Table arc -->
+      <div class="table-arc">
+        <div class="table-arc-label">Players</div>
+      </div>
+
+      <!-- Players -->
+      <div class="players-zone" id="playersZone"></div>
+
+      <!-- Resolve -->
+      <div class="resolve-row">
+        <button class="resolve-btn" onclick="resolveHole()">✓ Resolve Hole</button>
+        <div id="holeError"></div>
+        <button class="secondary-btn" onclick="toggleScorecard()">📋 View Scorecard</button>
+      </div>
+
+    </div>
+
+    <!-- Scorecard modal -->
+    <div id="scorecardModal" class="hidden modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>Scorecard</span>
+          <button class="close-btn" onclick="toggleScorecard()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="overflow-x:auto;">
+            <table id="scorecardTable">
+              <thead><tr id="scorecardHead"></tr></thead>
+              <tbody id="scorecardBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FINAL ══ -->
+  <div id="finalScreen" class="hidden">
+    <div class="final-wrap">
+      <h2>Final Results</h2>
+      <div style="overflow-x:auto;">
+        <table id="resultsTable">
+          <thead><tr id="resultsHeader"></tr></thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+      <br>
+      <h3 style="text-align:center;color:rgba(255,255,255,0.75);font-size:14px;margin-bottom:8px;">Net Positions</h3>
+      <table class="net-table">
+        <thead><tr id="netHeader"></tr></thead>
+        <tbody><tr id="netBody"></tr></tbody>
+      </table>
+      <div id="settlementSection"></div>
+      <div style="margin-top:20px;">
+        <button class="start-btn" onclick="window.location.reload()">New Game</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+</div><!-- /scroll-area -->
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('roundDate').value = new Date().toLocaleDateString('en-CA');
+  document.getElementById('scorecardModal').addEventListener('click', function(e){
+    if(e.target === this) this.classList.add('hidden');
+  });
+  [0,1,2,3].forEach(i=>{
+    document.getElementById('name'+i).addEventListener('input', updateBankerDropdown);
+  });
+  updateBankerDropdown();
+});
+
+function updateBankerDropdown(){
+  const sel = document.getElementById('startBankerSelect');
+  const cur = sel.value;
+  sel.innerHTML = '';
+  [0,1,2,3].forEach(i=>{
+    const val = document.getElementById('name'+i).value.trim();
+    if(val){
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = val;
+      sel.appendChild(o);
+    }
+  });
+  if(sel.querySelector(`option[value="${cur}"]`)) sel.value = cur;
+}
+
+/* ── State ── */
+let hole = 1;
+let totalHoles = 18;
+let courseName = '';
+let playerNames = [];
+let playerWagersBase = [];  /* wager before any double is applied */
+let bankerIdx = 0;
+let minValue = 1;
+let maxValue = 5;
+let playerWagers = [];
+let playerScores = [];
+let carryovers = [];
+let playerNetTotals = [];
+let currentPar = 4;
+let holeHistory = [];
+
+function goBack(){
+  if(holeHistory.length > 0 && !confirm('Abandon this round? Scores will be lost.')) return;
+  window.location.href = 'index.html';
+}
+
+function startGame(){
+  let raw = [0,1,2,3].map(n=>document.getElementById('name'+n).value.trim());
+  playerNames = raw.filter(n=>n!=='');
+  if(playerNames.length < 2){ document.getElementById('nameError').style.display='block'; return; }
+  document.getElementById('nameError').style.display='none';
+
+  let selectVal = Number(document.getElementById('startBankerSelect').value);
+  let filledIndices = raw.map((n,i)=>n!==''?i:-1).filter(i=>i>=0);
+  let mappedBanker = filledIndices.indexOf(selectVal);
+  bankerIdx = mappedBanker >= 0 ? mappedBanker : 0;
+
+  playerNetTotals = new Array(playerNames.length).fill(0);
+  carryovers = new Array(playerNames.length).fill(0);
+  minValue = Math.max(1, Number(document.getElementById('minValue').value)||1);
+  maxValue = Math.max(minValue, Number(document.getElementById('maxValue').value)||5);
+  courseName = document.getElementById('courseInput').value.trim();
+  totalHoles = Number(document.getElementById('holesSelect').value)||18;
+  currentPar = 4;
+
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+
+  renderHoleHeader();
+  renderTable();
+  renderStandings();
+  updateDisplays();
+}
+
+function randBase(){
+  return Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+}
+
+function setPar(p){
+  currentPar = p;
+  document.querySelectorAll('.par-btn').forEach(b=>b.classList.toggle('active', Number(b.textContent)===p));
+}
+
+function renderHoleHeader(){
+  document.getElementById('holeLabel').textContent = hole;
+  let cnl = document.getElementById('courseNameLabel');
+  cnl.textContent = courseName;
+  cnl.style.display = courseName ? '' : 'none';
+  document.querySelectorAll('.par-btn').forEach(b=>b.classList.toggle('active', Number(b.textContent)===currentPar));
+  document.getElementById('distInput').value = '';
+}
+
+function renderTable(){
+  playerWagers = playerNames.map((_,i) => i === bankerIdx ? 0 : minValue);
+  playerWagersBase = [...playerWagers];
+  playerScores = playerNames.map(() => currentPar);
+
+  // Dealer card
+  document.getElementById('dealerName').textContent = playerNames[bankerIdx];
+  document.getElementById('dealerScoreVal').textContent = playerScores[bankerIdx];
+  document.getElementById('dealerDouble').checked = false;
+
+  // Player cards (everyone except banker)
+  let nonBankers = playerNames.map((_,i)=>i).filter(i=>i!==bankerIdx);
+  document.getElementById('playersZone').innerHTML = nonBankers.map(i=>`
+    <div class="player-card" id="pcard-${i}">
+<div class="player-name">${esc(playerNames[i])}</div>
+      <div class="player-balance ${playerNetTotals[i] > 0 ? 'pos' : playerNetTotals[i] < 0 ? 'neg' : 'zero'}" id="pbal-${i}">${playerNetTotals[i] > 0 ? '+' : ''}$${playerNetTotals[i]}</div>
+      <div class="player-score-area">
+        <div class="input-lbl">Score</div>
+        <div class="stepper">
+          <button class="step-btn" onclick="adjustScore(${i},-1)">−</button>
+          <span class="step-val" id="pscore-${i}">${playerScores[i]}</span>
+          <button class="step-btn" onclick="adjustScore(${i},1)">+</button>
+        </div>
+      </div>
+      <div class="wager-chip-wrap">
+        <div class="wager-chip-label">Wager</div>
+        <div class="wager-stepper">
+          <button class="wager-step-btn left" onclick="stepWager(${i},-1)">−</button>
+          <div class="wager-val-display" id="wval-${i}">$${minValue}</div>
+          <button class="wager-step-btn right" onclick="stepWager(${i},1)">+</button>
+        </div>
+      </div>
+      <label class="double-label">
+        <input type="checkbox" id="pdouble-${i}" onchange="applyDouble(${i})">
+        <span class="double-pill">Double</span>
+      </label>
+    </div>
+  `).join('');
+
+  nonBankers.forEach(i => _updateWagerDisplay(i));
+}
+
+/* ── Wager stepper ── */
+function _updateWagerDisplay(idx){
+  let el = document.getElementById('wval-'+idx);
+  if(el) el.textContent = '$'+playerWagers[idx];
+}
+
+function stepWager(idx, dir){
+  let cur = playerWagersBase[idx];
+  let next = Math.max(minValue, Math.min(maxValue, cur + dir));
+  if(next === cur) return;
+  playerWagersBase[idx] = next;
+  _refreshWagerDisplay(idx);
+}
+
+function adjustScore(idx, delta){
+  // idx === -1 means banker
+  let realIdx = idx === -1 ? bankerIdx : idx;
+  playerScores[realIdx] = Math.max(1, playerScores[realIdx] + delta);
+  if(idx === -1){
+    document.getElementById('dealerScoreVal').textContent = playerScores[bankerIdx];
+  } else {
+    let el = document.getElementById('pscore-'+idx);
+    if(el) el.textContent = playerScores[idx];
+  }
+}
+
+function matchupValue(playerIdx){
+  return playerWagers[playerIdx] + (carryovers[playerIdx] || 0);
+}
+
+function updateDisplays(){
+  let nonBankers = playerNames.map((_,i)=>i).filter(i=>i!==bankerIdx);
+  nonBankers.forEach(i => _updateWagerDisplay(i));
+}
+
+function applyDouble(idx){
+  let nonBankers = playerNames.map((_,i)=>i).filter(i=>i!==bankerIdx);
+  nonBankers.forEach(i => _refreshWagerDisplay(i));
+}
+
+function _refreshWagerDisplay(i){
+  let bankerChecked  = document.getElementById('dealerDouble')?.checked  || false;
+  let playerChecked  = document.getElementById('pdouble-'+i)?.checked    || false;
+  let doublesCount   = (bankerChecked ? 1 : 0) + (playerChecked ? 1 : 0);
+  playerWagers[i]    = playerWagersBase[i] * Math.pow(2, doublesCount);
+  _updateWagerDisplay(i);
+  let stepper = document.querySelector(`#pcard-${i} .wager-stepper`);
+  if(stepper) stepper.classList.toggle('doubled', doublesCount > 0);
+}
+
+function resolveHole(){
+  document.getElementById('holeError').style.display = 'none';
+  let scores = [...playerScores];
+  let bankerDoubled = document.getElementById('dealerDouble')?.checked || false;
+  let bankerScore = scores[bankerIdx];
+  let matchups = [];
+
+  let nonBankers = playerNames.map((_,i)=>i).filter(i=>i!==bankerIdx);
+  nonBankers.forEach(i=>{
+    let playerDoubled = document.getElementById('pdouble-'+i)?.checked || false;
+    let doublesCount = (bankerDoubled ? 1 : 0) + (playerDoubled ? 1 : 0);
+    let holeValue = playerWagersBase[i] * Math.pow(2, doublesCount) + carryovers[i];
+    let result, amount = 0;
+    if(scores[i] > bankerScore){
+      result = 'banker'; amount = holeValue;
+      playerNetTotals[bankerIdx] += holeValue;
+      playerNetTotals[i] -= holeValue;
+      carryovers[i] = 0;
+    } else if(scores[i] < bankerScore){
+      result = 'player'; amount = holeValue;
+      playerNetTotals[i] += holeValue;
+      playerNetTotals[bankerIdx] -= holeValue;
+      carryovers[i] = 0;
+    } else {
+      result = 'tie'; amount = 0;
+      carryovers[i] += playerWagersBase[i] * Math.pow(2, doublesCount);
+    }
+    matchups.push({playerIdx:i, holeValue, result, amount});
+  });
+
+  let allTied = matchups.every(m => m.result === 'tie');
+
+  let nextBankerIdx = bankerIdx;
+  if(!allTied){
+    let beaters = matchups
+      .filter(m => m.result === 'player')
+      .map(m => ({idx: m.playerIdx, score: scores[m.playerIdx]}))
+      .sort((a,b) => a.score - b.score);
+    if(beaters.length > 0){
+      let lowestScore = beaters[0].score;
+      let topBeaters = beaters.filter(b => b.score === lowestScore);
+      if(topBeaters.length === 1) nextBankerIdx = topBeaters[0].idx;
+    }
+  }
+
+  if(nextBankerIdx !== bankerIdx){
+    carryovers = new Array(playerNames.length).fill(0);
+  }
+
+  holeHistory.push({
+    holeNum: hole,
+    par: currentPar,
+    dist: document.getElementById('distInput').value || '',
+    bankerIdx,
+    scores: [...scores],
+    doubles: nonBankers.map(i=>document.getElementById('pdouble-'+i)?.checked||false),
+    matchups,
+    allTied,
+    nextBankerIdx
+  });
+
+  bankerIdx = nextBankerIdx;
+  renderStandings();
+  if(!document.getElementById('scorecardModal').classList.contains('hidden')) renderScorecard();
+
+  hole++;
+  if(hole > totalHoles){ endGame(); return; }
+
+  renderHoleHeader();
+  renderTable();
+  updateDisplays();
+}
+
+function renderStandings(){
+  /* update inline balance on each player card */
+  playerNames.forEach((_, i) => {
+    let el = document.getElementById('pbal-'+i);
+    if(!el) return;
+    let v = playerNetTotals[i];
+    el.textContent = (v > 0 ? '+' : '') + '$' + v;
+    el.className = 'player-balance ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero');
+  });
+
+  /* update dealer balance */
+  let dealerEl = document.getElementById('dealerBal');
+  if(dealerEl){
+    let v = playerNetTotals[bankerIdx];
+    dealerEl.textContent = (v > 0 ? '+' : '') + '$' + v;
+    dealerEl.className = 'player-balance ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero');
+  }
+}
+
+function toggleScorecard(){
+  let modal = document.getElementById('scorecardModal');
+  if(modal.classList.contains('hidden')){
+    renderScorecard();
+    modal.classList.remove('hidden');
+  } else {
+    modal.classList.add('hidden');
+  }
+}
+
+function renderScorecard(){
+  let thead = document.getElementById('scorecardHead');
+  let tbody = document.getElementById('scorecardBody');
+  thead.innerHTML = '<th>#</th><th>Par</th><th>Yds</th>'
+    + playerNames.map(n=>`<th>${esc(n)}</th>`).join('')
+    + '<th>Banker</th><th>Result</th>';
+
+  let histMap = {};
+  holeHistory.forEach(h=>{ histMap[h.holeNum] = h; });
+
+  let rows = '';
+  for(let n = 1; n <= totalHoles; n++){
+    let h = histMap[n];
+    if(h){
+      let winners = new Set(h.matchups.filter(m=>m.result==='player').map(m=>m.playerIdx));
+      let row = `<tr><td>${n}</td><td>${h.par||'–'}</td><td>${h.dist||'–'}</td>`;
+      for(let i=0; i<playerNames.length; i++){
+        let cls = winners.has(i) ? 'sc-pos' : i===h.bankerIdx ? 'sc-banker-cell' : '';
+        row += `<td class="${cls}">${h.scores[i]}</td>`;
+      }
+      row += `<td class="sc-banker-cell">${esc(playerNames[h.bankerIdx])}</td>`;
+      let parts = [];
+      if(h.allTied){
+        parts.push('Carryover');
+      } else {
+        h.matchups.forEach(m=>{
+          if(m.result==='banker') parts.push(`<span class="sc-neg">${esc(playerNames[m.playerIdx])} −$${m.amount}</span>`);
+          else if(m.result==='player') parts.push(`<span class="sc-pos">${esc(playerNames[m.playerIdx])} +$${m.amount}</span>`);
+        });
+      }
+      row += `<td class="sc-result-col">${parts.join('<br>')}</td></tr>`;
+      rows += row;
+    } else {
+      let emptyCells = playerNames.map(()=>'<td>–</td>').join('');
+      rows += `<tr style="opacity:0.35"><td>${n}</td><td>–</td><td>–</td>${emptyCells}<td>–</td><td>–</td></tr>`;
+    }
+  }
+
+  let totRow = '<tr style="font-weight:bold;background:rgba(0,0,0,0.3)"><td colspan="3">Net</td>';
+  for(let i=0; i<playerNames.length; i++){
+    let v = playerNetTotals[i];
+    let sign = v > 0 ? '+' : '';
+    let cls = v > 0 ? 'sc-pos' : v < 0 ? 'sc-neg' : '';
+    totRow += `<td class="${cls}">${sign}$${v}</td>`;
+  }
+  totRow += '<td colspan="2"></td></tr>';
+  tbody.innerHTML = rows + totRow;
+}
+
+function saveGameResult(){
+  try{
+    let history = JSON.parse(localStorage.getItem('gameHistory')||'[]');
+    history.push({
+      id: Date.now(),
+      game: 'banker',
+      course: document.getElementById('courseInput').value.trim() || '',
+      date: new Date(document.getElementById('roundDate').value+'T12:00:00').toISOString(),
+      players: [...playerNames],
+      minValue, maxValue,
+      playerNetTotals: [...playerNetTotals],
+      holeHistory: holeHistory.map(h=>({...h, scores:[...h.scores], matchups:h.matchups.map(m=>({...m}))}))
+    });
+    localStorage.setItem('gameHistory', JSON.stringify(history));
+  }catch(e){}
+}
+
+function endGame(){
+  saveGameResult();
+  document.getElementById('gameScreen').classList.add('hidden');
+  document.getElementById('finalScreen').classList.remove('hidden');
+
+  let hdr = document.getElementById('resultsHeader');
+  hdr.innerHTML = '<th>Hole</th><th>Par</th><th>Yds</th>'
+    + playerNames.map(n=>`<th>${esc(n)}</th>`).join('')
+    + '<th>Result</th>';
+
+  let tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  holeHistory.forEach(h=>{
+    let winners = new Set(h.matchups.filter(m=>m.result==='player').map(m=>m.playerIdx));
+    let row = `<tr><td>${h.holeNum}</td><td>${h.par||'–'}</td><td>${h.dist||'–'}</td>`;
+    for(let p=0; p<playerNames.length; p++){
+      let cls = winners.has(p) ? 'sc-pos' : p===h.bankerIdx ? 'sc-banker-cell' : '';
+      row += `<td class="${cls}">${h.scores[p]}</td>`;
+    }
+    let resultParts = [];
+    if(h.allTied){
+      resultParts.push('Carryover');
+    } else {
+      h.matchups.forEach(m=>{
+        if(m.result==='banker') resultParts.push(`${esc(playerNames[m.playerIdx])} −$${m.amount}`);
+        else if(m.result==='player') resultParts.push(`${esc(playerNames[m.playerIdx])} +$${m.amount}`);
+      });
+    }
+    row += `<td class="sc-result-col">${resultParts.join('<br>')}</td></tr>`;
+    tbody.innerHTML += row;
+  });
+
+  let netHdr = document.getElementById('netHeader');
+  let netBdy = document.getElementById('netBody');
+  netHdr.innerHTML = ''; netBdy.innerHTML = '';
+  playerNames.forEach((p,i)=>{
+    let th = document.createElement('th'); th.textContent = p; netHdr.appendChild(th);
+    let td = document.createElement('td');
+    let v = playerNetTotals[i];
+    td.textContent = (v>0?'+':'')+'$'+v;
+    td.className = v>0?'pos':v<0?'neg':'zero';
+    netBdy.appendChild(td);
+  });
+
+  renderSettlement();
+}
+
+function renderSettlement(){
+  let creditors = [], debtors = [];
+  playerNetTotals.forEach((v,i)=>{
+    if(v > 0.001) creditors.push({idx:i, amt:v});
+    else if(v < -0.001) debtors.push({idx:i, amt:-v});
+  });
+  creditors.sort((a,b)=>b.amt-a.amt);
+  debtors.sort((a,b)=>b.amt-a.amt);
+
+  let transactions = [], ci=0, di=0;
+  while(ci < creditors.length && di < debtors.length){
+    let c = creditors[ci], d = debtors[di];
+    let settle = Math.round(Math.min(c.amt, d.amt)*100)/100;
+    if(settle > 0) transactions.push({from:playerNames[d.idx], to:playerNames[c.idx], amount:settle});
+    c.amt -= settle; d.amt -= settle;
+    if(c.amt < 0.001) ci++;
+    if(d.amt < 0.001) di++;
+  }
+
+  let el = document.getElementById('settlementSection');
+  if(!transactions.length){
+    el.innerHTML = `<div class="settlement-box"><h3>💰 Settlement</h3><div class="settle-all-square">Accounts settled. No transfers required.</div></div>`;
+    return;
+  }
+  let rows = transactions.map(t=>`
+    <div class="settle-row">
+      <span class="settle-from">${esc(t.from)}</span>
+      <span class="settle-arrow">owes</span>
+      <span class="settle-to">${esc(t.to)}</span>
+      <span class="settle-amount">$${t.amount.toFixed(2)}</span>
+    </div>`).join('');
+  el.innerHTML = `<div class="settlement-box"><h3>💰 Settlement</h3>${rows}</div>`;
+}
+
+function flipCard(id){
+  const inner = document.getElementById(id);
+  inner.classList.toggle('flipped');
+  const btn = document.querySelector('.flip-btn');
+  if(btn) btn.style.display = inner.classList.contains('flipped') ? 'none' : 'flex';
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>

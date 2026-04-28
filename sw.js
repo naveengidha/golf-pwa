@@ -1,11 +1,9 @@
-const CACHE = 'golf-pwa-v37';
+const CACHE = 'golf-pwa-v38';
 const ASSETS = [
   '/',
   '/index.html',
   '/f1.html',
   '/banker.html',
-  '/stableford.html',
-  '/matchplay.html',
   '/practice.html',
   '/history.html',
   '/courses.json',
