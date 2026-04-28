@@ -1,4 +1,4 @@
-const CACHE = 'golf-pwa-v38';
+const CACHE = 'golf-pwa-v39';
 const ASSETS = [
   '/',
   '/index.html',
